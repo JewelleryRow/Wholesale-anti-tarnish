@@ -109,6 +109,10 @@ body{min-height:100vh}
   padding:12px;font-weight:900;letter-spacing:.2px;transition:.2s
 }
 .add:hover{background:var(--green-dark)}
+.skeleton-card{pointer-events:none}
+.skeleton-block{background:linear-gradient(90deg,#eef0f2 25%,#f7f8f9 37%,#eef0f2 63%);background-size:400% 100%;animation:skeleton-shimmer 1.3s ease infinite}
+.skeleton-line{height:12px;border-radius:6px;margin-top:8px;background:linear-gradient(90deg,#eef0f2 25%,#f7f8f9 37%,#eef0f2 63%);background-size:400% 100%;animation:skeleton-shimmer 1.3s ease infinite}
+@keyframes skeleton-shimmer{0%{background-position:100% 0}100%{background-position:0 0}}
 
 .profile{padding:24px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
@@ -482,7 +486,12 @@ body{min-height:100vh}
  <section id="home" class="page active">
   <div class="hero"><div><h1>Jewellery Row</h1><p>Anti Tarnish Jewellery Row Material</p></div></div>
   <div class="section-title"><h2>Featured Jewellery</h2><span class="sub">Jewellery materials collection</span></div>
-  <div id="products" class="products"></div>
+  <div id="products" class="products">
+    <div class="card product skeleton-card"><div class="pic skeleton-block"></div><div class="skeleton-line" style="width:70%"></div><div class="skeleton-line" style="width:40%"></div><div class="skeleton-line" style="width:50%;height:22px;margin-top:9px"></div></div>
+    <div class="card product skeleton-card"><div class="pic skeleton-block"></div><div class="skeleton-line" style="width:70%"></div><div class="skeleton-line" style="width:40%"></div><div class="skeleton-line" style="width:50%;height:22px;margin-top:9px"></div></div>
+    <div class="card product skeleton-card"><div class="pic skeleton-block"></div><div class="skeleton-line" style="width:70%"></div><div class="skeleton-line" style="width:40%"></div><div class="skeleton-line" style="width:50%;height:22px;margin-top:9px"></div></div>
+    <div class="card product skeleton-card"><div class="pic skeleton-block"></div><div class="skeleton-line" style="width:70%"></div><div class="skeleton-line" style="width:40%"></div><div class="skeleton-line" style="width:50%;height:22px;margin-top:9px"></div></div>
+  </div>
  </section>
 
  <section id="productDetail" class="page">
@@ -739,24 +748,65 @@ function renderCategoryNav(){
 }
 
 let PRODUCTS=[];
+let productsLoaded=false;
 
 function loadProductsFromServer(){ renderProducts(); }
 
-/* Live inventory from the Admin Panel via Firebase. As soon as admin
-   adds/deletes a product, it appears/disappears here automatically.
-   No dummy/demo products — if admin hasn't added anything yet, the
-   storefront simply shows an empty state. */
-db.ref("inventory").on("value",snap=>{
-  const val=snap.val()||{};
-  const keys=Object.keys(val);
-  PRODUCTS = keys.map(k=>{
-        const p=val[k];
-        return {id:p.id||k,n:p.title,p:Number(p.price)||0,s:p.subtitle||"Premium quality jewellery item",c:p.category||"all",photos:(p.photos&&p.photos.length)?p.photos:(p.photo?[p.photo]:[]),icon:"box"};
-      });
+function mapInventoryVal(val){
+  return Object.keys(val).map(k=>{
+    const p=val[k];
+    return {id:p.id||k,n:p.title,p:Number(p.price)||0,s:p.subtitle||"Premium quality jewellery item",c:p.category||"all",photos:(p.photos&&p.photos.length)?p.photos:(p.photo?[p.photo]:[]),icon:"box"};
+  });
+}
+function onInventoryUpdate(){
   renderProducts();
   if(window.currentOpenProductId && document.getElementById("productDetail")?.classList.contains("active")){
     if(PRODUCTS.some(p=>p.id===window.currentOpenProductId))openProduct(window.currentOpenProductId);
   }
+}
+
+/* Live inventory from the Admin Panel via Firebase. As soon as admin
+   adds/deletes a product, it appears/disappears here automatically.
+   No dummy/demo products — if admin hasn't added anything yet, the
+   storefront simply shows an empty state.
+
+   PERFORMANCE: pulling the whole "inventory" node in one shot means the
+   browser has to fully download every product's photo data before
+   ANYTHING can be shown — on a big catalog with several photos per
+   product this is what makes the storefront look frozen for a long
+   time. To fix the *first paint* speed without touching the Admin
+   Panel/DB structure, we grab a very small first batch immediately
+   (fast, renders right away), then load the complete inventory in the
+   background and swap it in once ready — so the user sees products
+   almost instantly instead of staring at a blank/loading screen.
+
+   DIAGNOSTIC: this also times + measures the size of what actually came
+   down the wire and prints it to the browser console, so it's possible
+   to see in one glance whether the delay is network/DB latency or the
+   product photos themselves being very large (e.g. base64 images saved
+   directly in the database instead of as compressed Storage URLs) —
+   open DevTools > Console (F12) to see "[Inventory timing]" lines. */
+const _invLoadStart=performance.now();
+let fullInventoryLoaded=false;
+const quickInventoryRef=db.ref("inventory").orderByKey().limitToFirst(4);
+quickInventoryRef.on("value",snap=>{
+  if(fullInventoryLoaded)return;
+  const val=snap.val()||{};
+  const approxKB=Math.round(JSON.stringify(val).length/1024);
+  console.log(`[Inventory timing] first ${Object.keys(val).length} product(s): ${(performance.now()-_invLoadStart).toFixed(0)}ms, ~${approxKB}KB`);
+  PRODUCTS=mapInventoryVal(val);
+  productsLoaded=true;
+  onInventoryUpdate();
+});
+db.ref("inventory").on("value",snap=>{
+  fullInventoryLoaded=true;
+  quickInventoryRef.off();
+  const val=snap.val()||{};
+  const approxKB=Math.round(JSON.stringify(val).length/1024);
+  console.log(`[Inventory timing] FULL ${Object.keys(val).length} product(s): ${(performance.now()-_invLoadStart).toFixed(0)}ms, ~${approxKB}KB`);
+  PRODUCTS=mapInventoryVal(val);
+  productsLoaded=true;
+  onInventoryUpdate();
 });
 
 function productMedia(x){
@@ -801,6 +851,7 @@ function setCategory(category,btn){
  if(btn)btn.classList.add("active");
  renderProducts();
 }
+const SKELETON_CARD='<div class="card product skeleton-card"><div class="pic skeleton-block"></div><div class="skeleton-line" style="width:70%"></div><div class="skeleton-line" style="width:40%"></div><div class="skeleton-line" style="width:50%;height:22px;margin-top:9px"></div></div>';
 function renderProducts(){
  let q=document.getElementById("search").value.toLowerCase();
  let a=PRODUCTS.filter(x=>{
@@ -808,8 +859,8 @@ function renderProducts(){
    let matchesCategory=activeCategory==="all" || x.c===activeCategory;
    return matchesSearch && matchesCategory;
  });
- document.getElementById("products").innerHTML=a.length
- ?a.map(x=>`<article class="card product">
+ if(a.length){
+   document.getElementById("products").innerHTML=a.map(x=>`<article class="card product">
   <div class="pic" onclick="openProduct('${x.id}')">${productMedia(x)}</div>
   <h3 onclick="openProduct('${x.id}')" title="${x.n}">${x.n}</h3>
   <div class="sub">${x.s}</div>
@@ -822,8 +873,14 @@ function renderProducts(){
     </div>
     <button class="add" onclick="add('${x.id}',getHomeQty('${x.id}'))">ADD TO CART</button>
   </div>
-</article>`).join("")
- :`<div class="card empty">${PRODUCTS.length?"No products found in this category.":"No products available yet. Please check back soon."}</div>`;
+</article>`).join("");
+ }else if(!productsLoaded){
+   // Data hasn't arrived from the server yet — show shimmer placeholders,
+   // NOT "no products", so the user knows the app is still working.
+   document.getElementById("products").innerHTML=SKELETON_CARD.repeat(4);
+ }else{
+   document.getElementById("products").innerHTML=`<div class="card empty">${PRODUCTS.length?"No products found in this category.":"No products available yet. Please check back soon."}</div>`;
+ }
 }
 function add(id,amount=1){
  id=String(id);
