@@ -1,0 +1,1379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jewellery Row</title>
+<style>
+:root{
+  --yellow:#d4af37;
+  --yellow-soft:#fff6db;
+  --red:#7c2d12;
+  --green:#8b5e34;
+  --green-dark:#6f4826;
+  --ink:#171717;
+  --muted:#6f7479;
+  --bg:#f4f6f8;
+  --card:#fff;
+  --line:#e6e8eb;
+  --shadow:0 8px 28px rgba(20,30,40,.07);
+}
+*{box-sizing:border-box}
+html,body{margin:0;font-family:Inter,"Segoe UI",Arial,sans-serif;color:var(--ink);background:var(--bg)}
+button,input{font:inherit}
+button{cursor:pointer}
+body{min-height:100vh}
+
+.header{
+  position:sticky;top:0;z-index:30;background:#fff;
+  border-bottom:1px solid var(--line);
+  box-shadow:0 2px 14px rgba(0,0,0,.04)
+}
+.header-top{
+  background:linear-gradient(90deg,#ffd21a 0%,#ffd21a 72%,#ffcf12 100%);
+  padding:12px 5%;display:flex;align-items:center;gap:18px
+}
+.brand{display:flex;align-items:center;gap:10px;min-width:215px;font-weight:950;font-size:22px;letter-spacing:-.3px}
+.brand-mark{
+  width:40px;height:40px;border-radius:11px;background:var(--red);color:#fff;
+  display:grid;place-items:center;font-weight:1000;box-shadow:0 3px 8px rgba(229,57,53,.25)
+}
+.brand em{font-style:normal;color:var(--red)}
+.search{
+  height:46px;display:flex;flex:1;max-width:760px;background:#fff;
+  border-radius:10px;overflow:hidden;border:1px solid rgba(0,0,0,.10);
+  box-shadow:0 2px 7px rgba(0,0,0,.05)
+}
+.search input{border:0;outline:0;flex:1;padding:0 16px;font-size:14px}
+.search button{width:54px;background:var(--red);color:#fff;border:0;font-weight:900;font-size:18px}
+.head-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.head-btn{
+  background:#fff;border-radius:10px;padding:10px 13px;border:1px solid rgba(0,0,0,.08);
+  font-weight:850;white-space:nowrap;transition:.2s
+}
+.head-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.orders-btn{padding-left:14px;padding-right:14px}
+.count{background:var(--red);color:#fff;border-radius:20px;padding:2px 7px;margin-left:4px;font-size:12px}
+
+.nav{
+  padding:8px 5%;display:flex;gap:6px;overflow:auto;background:#fff;
+  border-top:1px solid rgba(0,0,0,.025)
+}
+.nav button{
+  white-space:nowrap;border:0;background:#fff;padding:10px 17px;border-radius:8px;
+  font-weight:850;color:#35383b;transition:.2s
+}
+.nav button.active,.nav button:hover{background:var(--yellow-soft);color:#111}
+.nav button.active{box-shadow:inset 0 -2px 0 var(--yellow)}
+
+.wrap{width:100%;max-width:1500px;margin:auto;padding:26px 5% 45px}
+.hero{
+  border-radius:18px;background:linear-gradient(110deg,#fff0a3 0%,#fff 52%,#e8f9ef 100%);
+  border:1px solid #ececec;padding:32px 34px;margin-bottom:28px;
+  display:flex;justify-content:space-between;align-items:center;gap:20px;
+  box-shadow:var(--shadow);position:relative;overflow:hidden
+}
+.hero:after{
+  content:"";position:absolute;right:-60px;top:-90px;width:230px;height:230px;
+  border-radius:50%;background:rgba(20,148,71,.06)
+}
+.hero h1{margin:0 0 8px;font-size:34px;letter-spacing:-1px}
+.hero p{margin:0;color:#555;font-size:15px}
+.hero-badge{background:var(--green);color:#fff;padding:11px 17px;border-radius:999px;font-weight:900;white-space:nowrap;z-index:1}
+
+.page{display:none}
+.page.active{display:block}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.section-title h2{margin:0;font-size:24px;letter-spacing:-.4px}
+.section-title .sub{font-size:13px}
+
+.products{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:16px;
+  box-shadow:0 4px 18px rgba(20,30,40,.055);overflow:hidden
+}
+.product{
+  padding:13px;min-height:330px;display:flex;flex-direction:column;
+  transition:.22s;border-color:#e4e6e8
+}
+.product:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(20,30,40,.11)}
+.pic{
+  height:170px;border-radius:12px;background:linear-gradient(145deg,#f1f3f5,#fafafa);
+  display:grid;place-items:center;font-size:62px;margin-bottom:14px;border:1px solid #f0f0f0
+}
+.product h3{font-size:16px;margin:0 0 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.sub{font-size:13px;color:var(--muted)}
+.price{font-size:22px;font-weight:950;color:var(--green);margin:9px 0 13px}
+.add{
+  margin-top:auto;background:var(--green);color:#fff;border:0;border-radius:9px;
+  padding:12px;font-weight:900;letter-spacing:.2px;transition:.2s
+}
+.add:hover{background:var(--green-dark)}
+
+.profile{padding:24px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.field label{display:block;font-size:13px;font-weight:800;margin-bottom:6px}
+.field input{
+  width:100%;height:44px;border:1px solid #dcdfe3;border-radius:9px;
+  padding:0 12px;outline:0;background:#fff
+}
+.field input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(20,148,71,.09)}
+.save{margin-top:18px;background:var(--green);color:#fff;border:0;padding:12px 20px;border-radius:9px;font-weight:900}
+
+.list{overflow:hidden}
+.row{
+  padding:17px 19px;border-bottom:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:center;gap:15px
+}
+.row:last-child{border-bottom:0}
+.qty{display:inline-flex;align-items:center;border:1px solid #dfe3e7;border-radius:7px;overflow:hidden;background:#fff}
+.qty button{
+  border:0;background:#f7f8fa;border-radius:0;width:26px;height:26px;font-size:14px;font-weight:900;color:#2b1b12
+}
+.qty button:hover{background:#eef0f2}
+.empty{padding:50px;text-align:center;color:var(--muted)}
+
+.cart-summary{
+  margin-top:15px;padding:22px;display:flex;justify-content:space-between;
+  align-items:center;gap:20px
+}
+.total-label{font-size:12px;color:var(--muted);font-weight:800;letter-spacing:.5px}
+.total{font-size:30px;font-weight:950}
+.order{background:var(--red);color:#fff;border:0;padding:13px 26px;border-radius:9px;font-weight:950}
+.order:hover{background:#c92f2c}
+
+.back-shop{
+  border:0;background:var(--yellow-soft);padding:9px 13px;border-radius:8px;
+  font-weight:850;margin-bottom:14px
+}
+.global-back{display:none;margin:0 0 14px;border:1px solid #d9dde2;background:#fff;color:#2b1b12;width:38px;height:38px;padding:0;border-radius:50%;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.06);transition:.18s}
+.global-back:hover{background:#f7f8fa;transform:translateX(-2px)}
+.global-back.show{display:inline-flex;align-items:center;justify-content:center}
+
+.modal-bg{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:100;
+  align-items:center;justify-content:center;padding:15px
+}
+.modal-bg.show{display:flex}
+.modal{
+  width:min(410px,100%);background:#fff;border-radius:18px;padding:27px;
+  position:relative;box-shadow:0 24px 70px rgba(0,0,0,.22)
+}
+.modal h2{margin:0 0 7px}
+.close{
+  position:absolute;right:13px;top:13px;border:0;background:#f0f1f2;
+  border-radius:50%;width:31px;height:31px
+}
+.modal input{
+  width:100%;height:45px;border:1px solid #ddd;border-radius:9px;
+  padding:0 12px;margin:14px 0;outline:0
+}
+.primary{width:100%;padding:12px;background:var(--green);color:#fff;border-radius:9px;font-weight:900;border:0}
+.status{font-size:13px;color:var(--muted);margin-top:9px}
+.toast{
+  position:fixed;right:18px;bottom:18px;background:#171717;color:#fff;
+  padding:13px 17px;border-radius:10px;z-index:150;display:none;box-shadow:0 8px 24px rgba(0,0,0,.2)
+}
+.toast.show{display:block}
+.notice-modal{text-align:center}
+.notice-icon{
+  width:56px;height:56px;border-radius:50%;margin:0 auto 14px;
+  display:grid;place-items:center;background:#fff4e0;color:#e5a324
+}
+.notice-icon.warn{background:#fdecea;color:#e53935}
+.notice-icon svg{width:28px;height:28px}
+.header.sub-page .search,.header.sub-page .nav,.header.sub-page .head-actions{display:none}
+.account-btn{max-width:170px;overflow:hidden;text-overflow:ellipsis}
+.detail-qty{display:flex;align-items:center;gap:10px;margin-top:14px}
+.detail-qty label{font-size:13px;font-weight:800;color:#4b5563}
+.qty-control{display:inline-flex;align-items:center;border:1px solid #d9dde2;border-radius:8px;overflow:hidden;background:#fff}
+.qty-control button{width:28px;height:28px;border:0;background:#f7f8fa;font-size:14px;font-weight:900;color:#2b1b12}
+.qty-control button:hover{background:#eef0f2}
+.qty-control input{width:34px;height:28px;border:0;border-left:1px solid #e5e7eb;border-right:1px solid #e5e7eb;text-align:center;outline:0;font-weight:900;font-size:12px}
+@media(max-width:760px){.account-btn{max-width:105px}}
+
+@media(max-width:1050px){
+  .products{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .brand{min-width:190px}
+}
+@media(max-width:760px){
+  .header-top{padding:9px 3%;flex-wrap:wrap;gap:8px}
+  .brand{min-width:auto;font-size:18px}
+  .brand-mark{width:34px;height:34px}
+  .head-actions{margin-left:auto}
+  .head-btn{padding:8px 9px;font-size:12px}
+  .search{order:3;flex-basis:100%;max-width:none}
+  .nav{padding:8px 3%;flex-wrap:wrap;overflow:visible;justify-content:center;gap:7px}
+  .nav button{padding:7px 11px;font-size:12.5px;white-space:normal;text-align:center;flex:0 1 auto}
+  .wrap{padding:14px 3%}
+  .hero{padding:22px;align-items:flex-start}
+  .hero h1{font-size:26px}
+  .hero-badge{display:none}
+  .products{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .product{min-height:285px;padding:9px}
+  .pic{height:125px;font-size:42px}
+  .product h3{font-size:14px}
+  .price{font-size:18px}
+  .grid{grid-template-columns:1fr}
+  .cart-summary{flex-direction:column;align-items:stretch}
+}
+
+/* Premium visual refinements */
+.header-top{background:#2b1b12;color:#fff}
+.brand{color:#fff;letter-spacing:-.5px}
+.brand em{color:#d4af37}
+.brand-mark{background:linear-gradient(145deg,#d4af37,#b8860b);color:#2b1b12;border-radius:10px}
+.search{height:48px;border-radius:11px;border:1px solid #d9dde2;box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.search input{font-size:14px}
+.search button{background:#e53935;font-size:17px}
+.head-btn{border:0;background:transparent;color:#fff;border-radius:8px;padding:7px 8px;font-size:12px;font-weight:800;box-shadow:none}.head-btn:hover{background:rgba(255,255,255,.10);transform:none;box-shadow:none}.head-btn svg{width:15px;height:15px;opacity:.9}.account-btn{max-width:150px}
+.head-btn:hover{border-color:#d4af37}
+.nav{padding-top:9px;padding-bottom:9px}
+.nav button{font-size:14px}
+@media(max-width:760px){.nav{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;overflow:hidden!important;gap:4px!important;padding:7px 2%!important}.nav button{font-size:10px!important;padding:8px 2px!important;white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis}}
+.nav button.active,.nav button:hover{background:#2b1b12;color:#fff;box-shadow:none}
+.nav button.active{border-bottom:2px solid #d4af37}
+.hero{background:linear-gradient(115deg,#fff8d6,#fff 55%,#f0f5f2);border-color:#e1e4e7}
+.hero-badge{background:#2b1b12;color:#fff;border:1px solid #2d3748}
+.section-title h2{font-size:25px}
+.products{grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+.product{min-height:360px;border-radius:15px;box-shadow:0 5px 22px rgba(15,23,42,.065)}
+.product:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(15,23,42,.12)}
+.pic{
+  height:185px;background:#f7f8fa;border:1px solid #e7e9ec;
+  font-size:0;position:relative;overflow:hidden
+}
+.icon-badge{
+  width:104px;height:104px;border-radius:50%;
+  background:radial-gradient(circle at 32% 28%,#fffdf2,#fff2b8 70%);
+  border:1px solid #f0e2a0;display:grid;place-items:center;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.6)
+}
+.icon-badge svg{width:52px;height:52px;display:block}
+.product h3{font-size:16px;font-weight:800;letter-spacing:-.15px}
+.price{font-size:22px;color:#12823f}
+.product-actions{display:flex;align-items:center;gap:6px;margin-top:auto}
+.home-qty{display:flex;align-items:center;justify-content:space-between;border:1px solid #dfe3e7;border-radius:6px;background:#fff;height:24px;overflow:hidden;flex:none}
+.home-qty button{width:22px;height:100%;border:0;background:#f7f8fa;font-size:12px;font-weight:900;color:#2b1b12;line-height:1}
+.home-qty button:hover{background:#eef0f2}
+.home-qty input{width:26px;height:100%;border:0;text-align:center;outline:0;font-weight:900;color:#2b1b12;font-size:11px;padding:0}
+.add,.buy-now{margin-top:0;height:30px;border-radius:7px;font-weight:800;font-size:11px;letter-spacing:.1px;border:1px solid transparent;padding:0 4px}
+.add{background:#2b1b12;color:#fff;flex:1}
+.add:hover{background:#293241}
+.buy-now{background:#e53935;color:#fff}
+.buy-now:hover{background:#c92f2c}
+.pic{cursor:pointer}
+.product h3{cursor:pointer}
+.pic img.product-photo{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transform:scale(1.22);transform-origin:center;transition:transform .35s ease
+}
+.product:hover .pic img.product-photo{transform:scale(1.32)}
+.category-label{
+  position:absolute;right:10px;top:10px;background:rgba(17,24,39,.88);border:none;
+  color:#fff;border-radius:6px;padding:4px 8px;font-size:10px;font-weight:800;
+  letter-spacing:.6px;text-transform:uppercase;z-index:2
+}
+@media(max-width:1050px){.products{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){
+  .header-top{background:#2b1b12}
+  .products{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .product{min-height:355px}
+  .pic{height:165px}
+  .icon-badge{width:90px;height:90px}
+  .icon-badge svg{width:44px;height:44px}
+  .product-actions{gap:5px}
+  .buy-now,.add{height:30px;font-size:11px;border-radius:7px}
+}
+
+/* Checkout flow */
+.checkout-card{padding:24px}
+.checkout-head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px}
+.checkout-head h2{margin:0;font-size:25px}
+.step-badge{font-size:12px;font-weight:900;background:#2b1b12;color:#fff;border-radius:999px;padding:8px 12px}
+.address-box{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.address-box .full{grid-column:1/-1}
+.checkout-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.secondary{border:1px solid #d9dde2;background:#fff;color:#222;padding:12px 18px;border-radius:9px;font-weight:850}
+.secondary:hover{background:#f5f6f8}
+.summary-items{border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
+.summary-item{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:14px 16px;border-bottom:1px solid #edf0f2}
+.summary-item:last-child{border-bottom:0}
+.summary-name{font-weight:800}
+.summary-meta{font-size:12px;color:#707780;margin-top:3px}
+.summary-price{font-weight:900;white-space:nowrap}
+.summary-total{margin-top:16px;border:1px solid #e2e5e8;border-radius:12px;padding:17px}
+.amount-line{display:flex;justify-content:space-between;padding:6px 0;color:#4b5563;font-size:14px}
+.amount-line.grand{border-top:1px solid #e5e7eb;margin-top:8px;padding-top:13px;color:#2b1b12;font-size:19px;font-weight:950}
+.delivery-box{margin-top:15px;padding:15px 16px;border-radius:11px;background:#f4f8f5;border:1px solid #dcece2}
+.delivery-box strong{color:#12823f}
+.payment-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:15px}
+.payment-option.unavailable{opacity:.55;cursor:not-allowed}
+.payment-option.unavailable input{cursor:not-allowed}
+.payment-option{border:1.5px solid #dfe3e7;border-radius:12px;padding:17px;background:#fff;text-align:left;transition:.2s}
+.payment-option:hover{border-color:#2b1b12;box-shadow:0 5px 15px rgba(0,0,0,.06)}
+.payment-option.selected{border-color:#2b1b12;box-shadow:0 0 0 2px #2b1b12;background:#fafafa}
+.payment-option input{margin-right:9px;accent-color:#2b1b12}
+.payment-title{font-weight:900}
+.payment-desc{display:block;color:#737980;font-size:12px;margin:7px 0 0 25px}
+.payment-actions{display:flex;justify-content:flex-end;margin-top:20px}
+.confirm-payment{background:#149447;color:#fff;border:0;padding:13px 23px;border-radius:9px;font-weight:950}
+.confirm-payment:hover{background:#0e7437}
+.prepaid-box{margin-top:16px;padding-top:16px;border-top:1px dashed #dde1e5}
+.qr-panel{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px;background:#fafbfc;border:1px solid #e5e7eb;border-radius:12px}
+.qr-holder{background:#fff;padding:9px;border-radius:10px;border:1px solid #e5e7eb;line-height:0}
+.qr-caption{text-align:center;font-size:13px;color:#555}
+.qr-caption strong{color:#12823f;font-size:15px}
+.upi-payment-card{width:100%;max-width:390px;margin:0 auto;text-align:center}
+.upi-brand{font-size:12px;font-weight:900;letter-spacing:.7px;color:#6b7280;text-transform:uppercase;margin-bottom:8px}
+.upi-amount{font-size:26px;font-weight:950;color:#2b1b12;margin-bottom:4px}
+.upi-hint{font-size:12px;color:#6b7280;margin-bottom:14px}
+.qr-holder{min-width:214px;min-height:214px;display:grid;place-items:center}
+.qr-holder img,.qr-holder canvas{display:block;margin:auto}
+.upi-id-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding:11px 12px;border:1px solid #e5e7eb;border-radius:11px;background:#f8fafc;text-align:left}
+.upi-id-text{min-width:0}
+.upi-id-label{font-size:10px;color:#737980;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.upi-id-value{font-size:13px;font-weight:850;color:#172554;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.copy-upi{border:1px solid #d9dee5;background:#fff;color:#2b1b12;border-radius:8px;padding:8px 10px;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap}
+.copy-upi:hover{background:#f1f5f9}
+.payment-note{margin-top:12px;padding:11px 13px;border-radius:10px;background:#f8fafc;border:1px solid #e7eaed;color:#66707a;font-size:11px;line-height:1.55;text-align:left}
+.payment-note strong{color:#2b1b12}
+
+.order-success{padding:36px 20px;text-align:center}
+.success-icon{width:58px;height:58px;border-radius:50%;background:#e9f7ef;color:#149447;display:grid;place-items:center;margin:0 auto 14px;font-size:28px;font-weight:950}
+.order-success h2{margin:0 0 7px}
+.order-success p{color:#6b7280;margin:0}
+.detail-layout{display:flex;gap:30px;align-items:flex-start;animation:detailOpen .25s ease}
+@keyframes detailOpen{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.detail-pic{width:280px;height:280px;flex:none;border-radius:16px}
+.detail-pic .icon-badge{width:220px;height:220px}
+.detail-pic .icon-badge svg{width:110px;height:110px}
+.detail-gallery-col{display:flex;flex-direction:column;gap:10px;flex:none}
+.gallery-thumbs{display:flex;gap:8px;width:280px}
+.gallery-thumb{width:60px;height:60px;border-radius:9px;overflow:hidden;cursor:pointer;border:2px solid transparent;flex:none}
+.gallery-thumb.active{border-color:#2b1b12}
+.gallery-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+@media(max-width:760px){
+ .detail-gallery-col{align-items:center}
+ .gallery-thumbs{width:min(85vw,320px)}
+}
+.detail-info h2{margin:0 0 6px;font-size:26px}
+.detail-info .price{font-size:28px;margin:12px 0}
+.detail-actions{display:flex;gap:12px;margin-top:18px;max-width:420px}
+.detail-actions .add,.detail-actions .buy-now{height:46px;font-size:14px;flex:1}
+@media(max-width:760px){
+ .detail-layout{flex-direction:column;align-items:center;text-align:center}
+ .detail-pic{width:min(85vw,320px);height:min(85vw,320px)}
+ .detail-pic .icon-badge{width:60%;height:60%}
+ .detail-pic .icon-badge svg{width:50%;height:50%}
+ .detail-actions{max-width:none;margin-left:auto;margin-right:auto}
+}
+@media(max-width:760px){
+ .address-box{grid-template-columns:1fr}
+ .address-box .full{grid-column:auto}
+ .payment-grid{grid-template-columns:1fr}
+ .checkout-head{align-items:flex-start}
+ .checkout-actions{flex-direction:column}
+ .checkout-actions button,.payment-actions button{width:100%}
+}
+
+/* Professional checkout + account navigation */
+.checkout-card{max-width:980px;margin:0 auto;padding:30px;border-radius:18px;box-shadow:0 12px 40px rgba(15,23,42,.07);border:1px solid #e4e7eb}
+.checkout-head{padding-bottom:18px;border-bottom:1px solid #edf0f2}
+.step-badge{letter-spacing:.5px}
+.address-box{margin-top:4px}
+.address-box .field input{height:48px;border-radius:10px;background:#fafbfc}
+.checkout-actions{padding-top:4px}
+.checkout-actions .secondary,.checkout-actions .add,.checkout-actions .order{height:46px;padding:0 20px;border-radius:10px}
+.checkout-actions .secondary{background:#f7f8fa;color:#374151;border-color:#e1e5e9}
+.summary-items{margin-top:4px;border:1px solid #e5e7eb;border-radius:14px;background:#fff}
+.summary-item{padding:16px 18px}
+.summary-total{background:#fafbfc;border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin-top:16px}
+.delivery-box{background:#f7faf8;padding:16px 18px;line-height:1.6}
+.policy-note{margin-top:12px;padding:12px 14px;border:1px solid #eceff1;border-radius:10px;background:#fbfcfd;color:#626b75;font-size:12px;line-height:1.55}
+.payment-grid{gap:12px}
+.payment-option{padding:18px;border-radius:14px;cursor:pointer}
+.payment-option.selected{border-color:#2b1b12;box-shadow:0 0 0 1px #2b1b12}
+.payment-title{font-size:14px}
+.payment-fee{float:right;font-weight:900;color:#2b1b12}
+.prepaid-box{background:#fafbfc;border:1px solid #e7eaed;border-radius:14px;padding:18px;margin-top:16px}
+.prepaid-box .qr-panel{background:#fff;border:0;padding:4px}
+.qr-timer{font-weight:900;color:#e53935;font-size:13px}
+.utr-wrap{margin-top:14px}
+.utr-wrap input{background:#fff}
+.payment-actions{justify-content:flex-end}
+.confirm-payment{min-width:150px;height:46px;border-radius:10px}
+.confirm-payment:disabled{opacity:.45;cursor:not-allowed}
+.order-policy{margin:-6px 0 16px;padding:13px 16px;border-radius:11px;background:#fff8e5;border:1px solid #f1dfaa;color:#67551e;font-size:12px;line-height:1.55}
+.order-row{padding:18px 20px}
+.order-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:900;color:#12823f;margin-top:5px}
+.cancel-order{margin-top:8px;border:1px solid #e53935;background:#fff;color:#c92f2c;padding:7px 10px;border-radius:7px;font-size:11px;font-weight:800}
+.cancel-order:hover{background:#fdeeee}
+@media(max-width:760px){.checkout-card{padding:20px}.head-btn{padding:6px 5px;font-size:11px}.head-btn svg{width:14px;height:14px}.checkout-actions{gap:8px}.payment-fee{float:none;display:block;margin-top:5px}.confirm-payment{width:100%}}
+
+/* Enhanced prepaid popup + professional order tracking */
+.prepaid-modal-bg{z-index:220;background:rgba(8,12,18,.72);backdrop-filter:blur(5px)}
+.prepaid-modal{width:min(460px,calc(100vw - 28px));max-height:calc(100vh - 28px);overflow:auto;padding:24px 22px 22px;border-radius:22px;animation:modalPop .28s cubic-bezier(.2,.8,.2,1)}
+@keyframes modalPop{from{opacity:0;transform:translateY(22px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.prepaid-modal-head{display:flex;align-items:center;gap:12px;padding-right:28px}.prepaid-modal-head h2{margin:2px 0 3px;font-size:24px;letter-spacing:-.5px}.prepaid-modal-kicker{font-size:10px;font-weight:950;letter-spacing:1.1px;color:#12823f}.prepaid-modal-icon{width:42px;height:42px;border-radius:12px;background:#eaf8f0;color:#12823f;display:grid;place-items:center;font-size:10px;font-weight:950}
+.prepaid-modal-total{font-size:30px;font-weight:950;text-align:center;margin:18px 0 12px;color:#2b1b12}.modal-qr-shell{display:flex;justify-content:center;align-items:center;padding:10px 0 8px}.modal-qr-holder{width:236px;height:236px;min-width:236px;min-height:236px;box-shadow:0 8px 28px rgba(15,23,42,.08);border-radius:16px}.modal-qr-timer{text-align:center;margin:8px 0 12px;font-size:12px}.modal-utr-wrap{margin-top:13px}.modal-utr-wrap input{margin:8px 0 0}.modal-payment-note{margin:12px 0;padding:11px 13px;border-radius:10px;background:#f8fafc;border:1px solid #e7eaed;color:#66707a;font-size:11px;line-height:1.5}.modal-confirm-payment{width:100%;height:48px;margin-top:2px;border-radius:11px;box-shadow:0 8px 18px rgba(20,148,71,.18)}body.prepaid-open{overflow:hidden}
+.order-detail-card{padding:26px;max-width:1050px;margin:0 auto;border-radius:20px;box-shadow:0 12px 40px rgba(15,23,42,.07)}.order-detail-top{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;padding-bottom:20px;border-bottom:1px solid #edf0f2}.order-detail-title h2{margin:0 0 5px;font-size:25px}.order-detail-meta{font-size:12px;color:#6b7280}.detail-status-pill{display:inline-flex;align-items:center;gap:7px;padding:9px 12px;background:#eef9f2;color:#12823f;border:1px solid #d8eedf;border-radius:999px;font-size:12px;font-weight:950;white-space:nowrap}.detail-status-dot{width:8px;height:8px;background:#16a34a;border-radius:50%;box-shadow:0 0 0 4px rgba(22,163,74,.10)}
+.tracking-wrap{padding:18px 2px 14px;overflow:visible}.tracking-line{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));min-width:0;width:100%;position:relative;gap:0}.tracking-line:before{content:"";position:absolute;left:5.5%;right:5.5%;top:18px;height:4px;background:#e8ebef;border-radius:99px}.track-progress{position:absolute;left:5.5%;top:18px;height:4px;background:linear-gradient(90deg,#19a857,#149447);border-radius:99px;transition:width .55s ease}.track-step{position:relative;text-align:center;z-index:1}.track-icon{width:38px;height:38px;border-radius:50%;margin:0 auto 10px;background:#fff;border:2px solid #dfe3e7;color:#9aa1a8;display:grid;place-items:center;font-size:13px;font-weight:950;transition:.25s}.track-step.done .track-icon{background:#149447;border-color:#149447;color:#fff;box-shadow:0 0 0 5px rgba(20,148,71,.09)}.track-step.active .track-icon{background:#fff;border-color:#149447;color:#149447;box-shadow:0 0 0 6px rgba(20,148,71,.10);animation:pulseTrack 1.7s infinite}@keyframes pulseTrack{50%{box-shadow:0 0 0 10px rgba(20,148,71,0)}}.track-label{font-size:11px;line-height:1.25;color:#6b7280;font-weight:800}.track-step.done .track-label,.track-step.active .track-label{color:#2b1b12}
+.order-detail-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;margin-top:12px}.detail-box{border:1px solid #e5e7eb;border-radius:14px;padding:17px;background:#fff}.detail-box h3{margin:0 0 12px;font-size:15px}.detail-item{display:flex;justify-content:space-between;gap:15px;padding:8px 0;border-bottom:1px dashed #edf0f2;font-size:13px}.detail-item:last-child{border-bottom:0}.detail-item span:first-child{color:#6b7280}.detail-item strong{text-align:right}.detail-address{font-size:13px;line-height:1.6;color:#374151}.detail-total{margin-top:12px;padding-top:12px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:18px;font-weight:950}.detail-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}.detail-cancel-disabled{font-size:11px;color:#8b949e;align-self:center}.order-row{cursor:pointer;transition:.18s}.order-row:hover{background:#fafbfc}.order-row .order-status{font-size:11px;font-weight:900;color:#12823f}.order-row .order-status small{color:#6b7280;font-weight:700}
+.order-success{padding:46px 22px 42px;text-align:center;overflow:hidden}.success-check-wrap{width:94px;height:94px;border-radius:50%;margin:0 auto 20px;background:#effaf3;display:grid;place-items:center;position:relative;animation:successScale .55s cubic-bezier(.2,1.3,.4,1)}.success-check-wrap:before,.success-check-wrap:after{content:"";position:absolute;border-radius:50%;inset:-7px;border:2px solid rgba(20,148,71,.15);animation:successRipple 1.6s ease-out infinite}.success-check-wrap:after{animation-delay:.45s}.success-check{width:66px;height:66px;border-radius:50%;background:linear-gradient(145deg,#20b15c,#149447);display:grid;place-items:center;color:#fff;box-shadow:0 12px 28px rgba(20,148,71,.24)}.success-check svg{width:34px;height:34px;stroke-dasharray:45;stroke-dashoffset:45;animation:drawCheck .5s .18s ease-out forwards}@keyframes drawCheck{to{stroke-dashoffset:0}}@keyframes successScale{from{opacity:0;transform:scale(.55)}to{opacity:1;transform:scale(1)}}@keyframes successRipple{0%{opacity:.7;transform:scale(.75)}100%{opacity:0;transform:scale(1.35)}}.order-success h2{font-size:28px;letter-spacing:-.5px}.success-badge-row{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:14px 0 0}.success-badge{padding:7px 10px;border-radius:999px;background:#f7f8fa;border:1px solid #e5e7eb;font-size:11px;font-weight:850;color:#374151}
+@media(max-width:760px){.prepaid-modal{padding:21px 16px 18px}.modal-qr-holder{width:210px;height:210px;min-width:210px;min-height:210px}.modal-qr-holder canvas{width:190px!important;height:190px!important}.order-detail-card{padding:14px}.order-detail-top{flex-direction:column}.order-detail-grid{grid-template-columns:1fr}.tracking-wrap{padding:12px 0 10px;overflow:visible}.tracking-line{min-width:0;width:100%;grid-template-columns:repeat(8,minmax(0,1fr));overflow:visible}.tracking-line:before{left:6.25%;right:6.25%;top:15px;height:3px}.track-progress{left:6.25%;top:15px;height:3px}.track-icon{width:28px;height:28px;margin-bottom:5px;font-size:10px}.track-label{font-size:8px;line-height:1.12;word-break:break-word}.detail-actions{flex-direction:column}.detail-actions button{width:100%}.order-success{padding:30px 14px 28px}.order-success h2{font-size:23px}.success-check-wrap{width:72px;height:72px;margin-bottom:14px}.success-check{width:52px;height:52px}.success-check svg{width:27px;height:27px}.success-badge-row{gap:6px}.success-badge{padding:6px 8px;font-size:10px}}
+
+
+.cart-row{align-items:center}.cart-product-info{min-width:0;display:flex;align-items:center;gap:12px}.cart-thumb{width:56px;height:56px;flex:none;border-radius:10px;overflow:hidden;background:linear-gradient(145deg,#f1f3f5,#fafafa);display:grid;place-items:center;border:1px solid #f0f0f0}.cart-thumb img{width:100%;height:100%;object-fit:cover}.cart-thumb .icon-badge{width:32px;height:32px}.cart-thumb .icon-badge svg{width:18px;height:18px}.cart-product-text{min-width:0}.cart-product-name{display:block;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cart-row-actions{display:flex;align-items:center;justify-content:flex-end;gap:14px;flex-wrap:wrap}.remove-cart{border:1px solid #fecaca;background:#fff;color:#dc2626;padding:8px 11px;border-radius:8px;font-size:12px;font-weight:850}.remove-cart:hover{background:#fef2f2}.tracking-caption{font-size:12px;color:#6b7280;margin:-8px 0 14px}.tracking-line{display:flex;align-items:flex-start;gap:0;position:relative;padding:8px 4px 2px}.tracking-line:before{content:"";position:absolute;left:7%;right:7%;top:24px;height:4px;background:#e5e7eb;border-radius:999px}.track-progress{position:absolute;left:7%;top:24px;height:4px;background:#149447;border-radius:999px;z-index:0}.track-step{position:relative;z-index:1;flex:1;min-width:0;text-align:center}.track-icon{width:34px;height:34px;border-radius:50%;margin:0 auto 8px;background:#eef1f3;border:2px solid #d8dde2;color:#6b7280;display:grid;place-items:center;font-size:14px;font-weight:950;box-shadow:0 2px 5px rgba(0,0,0,.05)}.track-step.done .track-icon{background:#eaf8ef;border-color:#149447;color:#149447}.track-step.active .track-icon{background:#149447;border-color:#149447;color:#fff;box-shadow:0 0 0 5px rgba(20,148,71,.12),0 5px 12px rgba(20,148,71,.2);animation:trackPulse 1.8s infinite}.track-label{font-size:11px;font-weight:850;color:#7b8187;line-height:1.2}.track-step.done .track-label,.track-step.active .track-label{color:#2b1b12}.track-step.active .track-label{color:#12823f}@keyframes trackPulse{0%,100%{box-shadow:0 0 0 4px rgba(20,148,71,.10),0 5px 12px rgba(20,148,71,.18)}50%{box-shadow:0 0 0 8px rgba(20,148,71,.03),0 6px 16px rgba(20,148,71,.22)}}
+@media(max-width:760px){.cart-row{align-items:flex-start}.cart-row-actions{width:100%;justify-content:flex-start}.cart-thumb{width:46px;height:46px}.cart-product-name{max-width:150px}.tracking-line{overflow-x:auto;padding-bottom:8px}.track-step{min-width:105px}.tracking-line:before{left:52px;right:52px}.track-progress{left:52px}.tracking-caption{margin-top:-4px}}
+
+.pincode-status{margin-top:7px;font-size:12px;line-height:1.45;min-height:18px}.pincode-status.ok{color:#15803d}.pincode-status.err{color:#b91c1c}.pincode-status.loading{color:#6b7280}.pincode-meta{margin-top:6px;padding:10px 12px;border:1px solid #dbe7df;border-radius:10px;background:#f7faf8;color:#374151;font-size:12px}.pincode-meta strong{color:#2b1b12}.pincode-invalid{border-color:#dc2626!important}.pincode-valid{border-color:#16a34a!important}
+
+/* Final compact order-tracking layout: all stages visible without horizontal swiping */
+.tracking-wrap{padding:14px 2px 10px!important;overflow:visible!important}
+.tracking-line{display:grid!important;grid-template-columns:repeat(8,minmax(0,1fr))!important;min-width:0!important;width:100%!important;overflow:visible!important;position:relative}
+.track-step{min-width:0!important}
+.track-icon{width:32px!important;height:32px!important;margin-bottom:6px!important;font-size:11px!important}
+.track-label{font-size:10px!important;line-height:1.15!important;white-space:normal!important;word-break:break-word!important}
+@media(max-width:760px){
+ .order-detail-card{padding:14px!important}
+ .tracking-wrap{padding:10px 0 8px!important}
+ .tracking-line{grid-template-columns:repeat(8,minmax(0,1fr))!important}
+ .tracking-line:before{left:6.25%!important;right:6.25%!important;top:14px!important;height:3px!important}
+ .track-progress{left:6.25%!important;top:14px!important;height:3px!important}
+ .track-icon{width:25px!important;height:25px!important;margin-bottom:4px!important;font-size:9px!important}
+ .track-label{font-size:7.5px!important;line-height:1.1!important}
+ .order-success{padding:28px 12px 24px!important}
+ .order-success h2{font-size:22px!important}
+ .success-check-wrap{width:68px!important;height:68px!important;margin-bottom:12px!important}
+ .success-check{width:48px!important;height:48px!important}
+ .success-check svg{width:25px!important;height:25px!important}
+}
+</style>
+</head>
+<body>
+<header class="header" id="siteHeader">
+  <div class="header-top">
+    <div class="brand">
+      <div class="brand-mark">JR</div>
+      <div>Jewellery <em>Row</em></div>
+    </div>
+
+    <div class="search">
+      <input id="search" placeholder="Search jewellery, rings, necklaces..." oninput="renderProducts()">
+      <button onclick="renderProducts()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></button>
+    </div>
+
+    <div class="head-actions">
+      <button id="accountBtn" class="head-btn account-btn" onclick="accountAction()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:4px"><circle cx="12" cy="8" r="3.3"/><path d="M5 20c1.2-4.2 4-6.3 7-6.3s5.8 2.1 7 6.3"/></svg><span id="accountLabel">Login</span></button>
+      <button class="head-btn orders-btn" onclick="page('orders')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:4px"><path d="M3 8.2 12 4l9 4.2-9 4.2-9-4.2Z"/><path d="M3 8.2v7.6L12 20l9-4.2V8.2"/><path d="M12 12.4V20"/></svg>My Orders</button>
+      <button class="head-btn" onclick="page('cart')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:4px"><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2l2.2 11h9.6L19 8H6"/></svg><span id="count" class="count">0</span></button>
+    </div>
+  </div>
+
+  <nav class="nav" id="categoryNav">
+    <button class="active" data-category="all" onclick="setCategory('all',this)">All</button>
+  </nav>
+</header>
+
+<main class="wrap">
+ <button id="globalBack" class="global-back" onclick="goBackPage()" aria-label="Go back"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+ 
+ <section id="home" class="page active">
+  <div class="hero"><div><h1>Jewellery Row</h1><p>Anti Tarnish Jewellery Row Material</p></div></div>
+  <div class="section-title"><h2>Featured Jewellery</h2><span class="sub">Jewellery materials collection</span></div>
+  <div id="products" class="products"></div>
+ </section>
+
+ <section id="productDetail" class="page">
+  <div class="card" id="productDetailCard" style="padding:26px"></div>
+  <div class="section-title" style="margin-top:32px"><h2>You may also like</h2><span class="sub">More from Jewellery Row</span></div>
+  <div id="relatedProducts" class="products"></div>
+ </section>
+
+ <section id="profile" class="page">
+  <div class="card profile">
+   <div class="section-title"><h2>My Profile</h2><span class="sub">Delivery details</span></div>
+   <div class="grid">
+    <div class="field"><label>Name</label><input id="name" placeholder="Your full name"></div>
+    <div class="field"><label>Mobile Number</label><input id="phone" inputmode="numeric" maxlength="10" placeholder="10 digit mobile number"></div>
+    <div class="field"><label>Address</label><input id="address" placeholder="House / Street / Area"></div>
+    <div class="field"><label>Landmark</label><input id="landmark" placeholder="Nearby landmark"></div>
+    <div class="field"><label>Pincode</label><input id="pincode" inputmode="numeric" maxlength="6" placeholder="6 digit pincode" autocomplete="postal-code"><div id="pincodeStatus" class="pincode-status"></div><div id="pincodeMeta" class="pincode-meta" style="display:none"></div></div>
+   </div>
+   <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px"><button class="save" style="margin-top:0" onclick="saveProfile()">Save Profile</button><button class="secondary" type="button" onclick="logout()">Logout</button></div><div id="profileMsg" class="status"></div>
+  </div>
+ </section>
+
+ <section id="orders" class="page">
+  <div class="section-title"><h2>My Orders</h2><span class="sub">Tap any order to track it</span></div>
+  <div class="card list" id="ordersList"></div>
+ </section>
+
+ <section id="orderDetail" class="page">
+  <div class="card order-detail-card" id="orderDetailCard"></div>
+ </section>
+
+ <section id="cart" class="page">
+  <div class="section-title"><h2>My Cart</h2><span class="sub">All items checkout together</span></div>
+  <div class="card list" id="cartList"></div>
+  <div class="card cart-summary"><div><div class="total-label">TOTAL AMOUNT</div><div class="total" id="total">₹0</div></div><button class="order" onclick="startCheckout()">ORDER NOW →</button></div>
+ </section>
+
+  <section id="checkoutAddress" class="page">
+   <div class="card checkout-card">
+    <div class="checkout-head">
+      <div><h2>Delivery Address</h2><div class="sub">Where should we deliver your order?</div></div>
+      <span class="step-badge">1 / 3</span>
+    </div>
+    <div class="address-box">
+      <div class="field"><label>Full Name</label><input id="coName" placeholder="Enter full name"></div>
+      <div class="field"><label>Mobile Number</label><input id="coPhone" inputmode="numeric" maxlength="10" placeholder="10 digit mobile number"></div>
+      <div class="field full"><label>Delivery Address</label><input id="coAddress" placeholder="House / Street / Area"></div>
+      <div class="field"><label>Landmark <span class="sub">(optional)</span></label><input id="coLandmark" placeholder="Nearby landmark"></div>
+      <div class="field"><label>Pincode</label><input id="coPincode" inputmode="numeric" maxlength="6" placeholder="6 digit pincode" autocomplete="postal-code"><div id="coPincodeStatus" class="pincode-status"></div><div id="coPincodeMeta" class="pincode-meta" style="display:none"></div></div>
+    </div>
+    <div class="checkout-actions">
+      <button class="add" onclick="saveCheckoutAddress()">Save &amp; Continue <span>→</span></button>
+    </div>
+   </div>
+  </section>
+
+  <section id="checkoutSummary" class="page">
+   <div class="card checkout-card">
+    <div class="checkout-head">
+      <div><h2>Order Summary</h2><div class="sub">Review your order before choosing a payment method.</div></div>
+      <span class="step-badge">2 / 3</span>
+    </div>
+    <div id="summaryItems" class="summary-items"></div>
+    <div class="summary-total">
+      <div class="amount-line"><span>Product Amount</span><strong id="summaryProductAmount">₹0</strong></div>
+      <div class="amount-line"><span>Shipping</span><strong id="summaryShipping">₹40</strong></div>
+      <div class="amount-line grand"><span>Total Payable</span><strong id="summaryGrandTotal">₹0</strong></div>
+    </div>
+    <div class="delivery-box">🚚 <strong>Expected Delivery: <span id="deliveryDate"></span></strong><br><span class="sub">Orders are normally delivered by the date shown above.</span></div>
+    <div class="policy-note"><strong>Cancellation Policy:</strong> An order can be cancelled within 24 hours of placement and only before pickup. If a prepaid order is cancelled after payment, the eligible refund amount will be refunded to the account used for the payment.</div>
+    <div class="checkout-actions">
+      <button class="order" onclick="openPayment()">Confirm Order <span>→</span></button>
+    </div>
+   </div>
+  </section>
+
+  <section id="payment" class="page">
+   <div class="card checkout-card">
+    <div class="checkout-head">
+      <div><h2>Choose Payment Method</h2><div class="sub">Select COD or complete your payment securely via UPI.</div></div>
+      <span class="step-badge">3 / 3</span>
+    </div>
+    <div class="order-policy"><strong>Order Cancellation &amp; Refund:</strong> Orders can be cancelled within 24 hours after placement and only before pickup. For prepaid orders, the amount successfully paid will be refunded to the original payment account, subject to the applicable cancellation policy.</div>
+    <div id="paymentAmount" class="summary-total"></div>
+    <div class="payment-grid">
+      <label class="payment-option selected" id="codOption">
+        <div><input type="radio" name="paymentMethod" value="COD" checked onchange="selectPayment('COD')"><span class="payment-title">Cash on Delivery</span></div>
+        <span class="payment-desc">Pay when the order is delivered.</span>
+        <span class="payment-fee"></span>
+      </label>
+      <label class="payment-option" id="prepaidOption">
+        <div><input type="radio" name="paymentMethod" value="PREPAID" onchange="selectPayment('PREPAID')"><span class="payment-title">Prepaid via UPI</span></div>
+        <span class="payment-desc">Pay the exact total payable amount by scanning the QR code.</span>
+      </label>
+    </div>
+    <div id="prepaidBox" class="prepaid-box" style="display:none">
+      <div class="upi-payment-card">
+        <div class="upi-brand">Secure UPI Payment</div>
+        <div class="upi-amount" id="prepaidAmount">₹0</div>
+        <div class="upi-hint">Scan this QR with any UPI app and pay the exact amount.</div>
+        <div class="qr-panel">
+          <div id="qrCodeHolder" class="qr-holder"></div>
+          <div class="qr-timer">Payment QR expires in <span id="qrTimer">05:00</span></div>
+        </div>
+        <div class="upi-id-row">
+          <div class="upi-id-text"><div class="upi-id-label">UPI ID</div><div class="upi-id-value" id="upiIdValue">BHARATPE2P0T0H6Z3E05213@unitype</div></div>
+          <button type="button" class="copy-upi" onclick="copyUpiId()">COPY</button>
+        </div>
+        <div class="payment-note"><strong>Payment confirmation:</strong> After payment, enter the UTR / UPI transaction ID below. The order will not be placed without it.</div>
+      </div>
+      <div class="field utr-wrap">
+        <label>UTR / UPI Transaction ID <span class="sub">(Required)</span></label>
+        <input id="utrInput" inputmode="numeric" maxlength="30" placeholder="Enter your UTR / transaction ID">
+      </div>
+    </div>
+    <div class="payment-actions">
+      <button class="confirm-payment" id="paymentActionBtn" onclick="handlePaymentAction()">Place COD Order</button>
+    </div>
+   </div>
+  </section>
+
+  <section id="orderSuccess" class="page">
+   <div class="card order-success">
+   <div class="success-check-wrap"><div class="success-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div></div>
+   <h2>Order Placed Successfully</h2>
+   <p id="successText"></p>
+   <div class="success-badge-row" id="successBadges"></div>
+    <div class="checkout-actions" style="justify-content:center">
+      <button class="add" style="padding:12px 22px" onclick="page('orders')">View My Orders</button>
+      <button class="secondary" onclick="page('home')">Continue Shopping</button>
+    </div>
+   </div>
+  </section>
+
+ </main>
+
+<div id="prepaidModal" class="modal-bg prepaid-modal-bg" onclick="if(event.target===this)closePrepaidModal()">
+ <div class="modal prepaid-modal" role="dialog" aria-modal="true" aria-labelledby="prepaidModalTitle">
+  <button class="close" type="button" onclick="closePrepaidModal()">×</button>
+  <div class="prepaid-modal-head"><div class="prepaid-modal-icon">UPI</div><div><div class="prepaid-modal-kicker">SECURE UPI</div><h2 id="prepaidModalTitle">Scan &amp; Pay</h2><div class="sub">Pay the exact amount using any UPI app.</div></div></div>
+  <div class="prepaid-modal-total" id="modalPrepaidAmount">₹0</div>
+  <div class="modal-qr-shell"><div id="modalQrCodeHolder" class="qr-holder modal-qr-holder"></div></div>
+  <div class="qr-timer modal-qr-timer">QR expires in <span id="modalQrTimer">05:00</span></div>
+  <div class="upi-id-row"><div class="upi-id-text"><div class="upi-id-label">UPI ID</div><div class="upi-id-value" id="modalUpiIdValue">BHARATPE2P0T0H6Z3E05213@unitype</div></div><button type="button" class="copy-upi" onclick="copyUpiId()">COPY</button></div>
+  <div class="field modal-utr-wrap"><label>UTR / UPI Transaction ID <span class="sub">(Required after payment)</span></label><input id="modalUtrInput" inputmode="numeric" maxlength="30" placeholder="Enter UTR / transaction ID"></div>
+  <div class="modal-payment-note">Your order will be placed only after you enter the UTR / transaction ID.</div>
+  <button class="confirm-payment modal-confirm-payment" id="modalPaymentActionBtn" onclick="confirmPrepaidFromModal()">Confirm Prepaid Order</button>
+ </div>
+</div>
+
+<div id="loginModal" class="modal-bg" onclick="if(event.target===this)closeLogin()">
+ <div class="modal">
+  <button class="close" onclick="closeLogin()">×</button>
+  <h2>Login to Jewellery Row</h2><div class="sub">Use your mobile number to continue.</div>
+  <input id="loginPhone" inputmode="numeric" maxlength="10" placeholder="10 digit mobile number" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)">
+  <button class="primary" onclick="loginWithPhone()">Continue</button>
+  <div id="loginStatus" class="status"></div>
+ </div>
+</div>
+<div id="toast" class="toast"></div>
+
+<div id="noticeModal" class="modal-bg" onclick="if(event.target===this)closeNotice()">
+ <div class="modal notice-modal">
+  <button class="close" onclick="closeNotice()">×</button>
+  <div class="notice-icon" id="noticeIcon"></div>
+  <h2 id="noticeTitle" style="text-align:center"></h2>
+  <p id="noticeText" class="sub" style="text-align:center;margin:6px 0 18px"></p>
+  <button class="primary" id="noticeBtn" onclick="noticeConfirm()"></button>
+ </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig={apiKey:"AIzaSyDQm9D503Y3-twvJjLhLBacU8sH8DBjYgk",authDomain:"jewellery-a32ee.firebaseapp.com",databaseURL:"https://jewellery-a32ee-default-rtdb.firebaseio.com",projectId:"jewellery-a32ee",storageBucket:"jewellery-a32ee.firebasestorage.app",messagingSenderId:"441508659343",appId:"1:441508659343:web:786e05e551f97eee7f30fa"};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+</script>
+<script>
+
+/* =========================
+   UI-ONLY DEMO DATA
+   No Firebase, admin panel, database or live inventory connection.
+========================= */
+let codEnabled = true;
+let shippingCost = 40;
+let minOrderEnabled = false;
+let minOrderValue = 0;
+let freeShipAbove = 1000;
+let prepaidDiscountPercent = 5;
+const DEFAULT_UPI_ID = "BHARATPE2P0T0H6Z3E05213@unitype";
+let MERCHANT_UPI_ID = DEFAULT_UPI_ID;
+
+/* Live settings from the Admin Panel via Firebase Realtime Database.
+   Any change admin makes to COD / shipping / minimum order / free
+   shipping threshold / prepaid discount / UPI ID reflects here
+   instantly, on any device, without a page reload. */
+db.ref("settings").on("value",snap=>{
+  const s=snap.val()||{};
+  codEnabled = s.codEnabled!==undefined ? !!s.codEnabled : true;
+  shippingCost = s.shippingCost!==undefined ? Number(s.shippingCost)||0 : 40;
+  minOrderValue = s.minOrderValue!==undefined ? Number(s.minOrderValue)||0 : 0;
+  minOrderEnabled = minOrderValue > 0;
+  freeShipAbove = s.freeShipAbove!==undefined ? Number(s.freeShipAbove)||0 : 1000;
+  prepaidDiscountPercent = s.prepaidDiscount!==undefined ? Number(s.prepaidDiscount)||0 : 5;
+  MERCHANT_UPI_ID = (s.upiId && String(s.upiId).trim()) ? String(s.upiId).trim() : DEFAULT_UPI_ID;
+  const upiEl=document.getElementById("modalUpiIdValue");
+  if(upiEl)upiEl.textContent=MERCHANT_UPI_ID;
+  renderCODAvailability();
+});
+
+/* Shipping is free once the product subtotal reaches the admin-set
+   threshold (freeShipAbove). Set freeShipAbove to 0 in admin to disable. */
+function effectiveShipping(subtotal){
+  if(freeShipAbove>0 && subtotal>=freeShipAbove) return 0;
+  return shippingCost;
+}
+/* Prepaid discount is a % off the payable total (product + shipping),
+   applied only when the customer pays via UPI/Prepaid. */
+function prepaidDiscountAmount(baseTotal){
+  if(prepaidDiscountPercent<=0) return 0;
+  return Math.round(baseTotal*prepaidDiscountPercent/100);
+}
+function renderCODAvailability(){
+  const codOpt=document.getElementById("codOption");
+  const codRadio=document.querySelector('input[name="paymentMethod"][value="COD"]');
+  const codDesc=codOpt?codOpt.querySelector(".payment-desc"):null;
+  if(!codOpt) return;
+  codOpt.classList.toggle("unavailable",!codEnabled);
+  if(codRadio) codRadio.disabled=!codEnabled;
+  if(codDesc) codDesc.textContent = codEnabled ? "Pay when the order is delivered." : "Currently unavailable. Please pay via Prepaid UPI.";
+}
+
+/* Categories are managed live from the Admin Panel — new categories
+   added there appear here instantly, with no code changes needed. */
+let CATEGORIES=[];
+db.ref("categories").on("value",snap=>{
+  const val=snap.val()||{};
+  CATEGORIES=Object.keys(val).map(k=>val[k]).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+  renderCategoryNav();
+});
+function renderCategoryNav(){
+  const nav=document.getElementById("categoryNav");
+  if(!nav) return;
+  const current=activeCategory;
+  nav.innerHTML=`<button data-category="all" onclick="setCategory('all',this)">All</button>`+
+    CATEGORIES.map(c=>`<button data-category="${c.name}" onclick="setCategory('${c.name}',this)">${c.name}</button>`).join("");
+  const stillExists = current==="all" || CATEGORIES.some(c=>c.name===current);
+  const activeName = stillExists ? current : "all";
+  const btn=nav.querySelector(`button[data-category="${CSS.escape(activeName)}"]`);
+  if(btn)btn.classList.add("active");
+  activeCategory=activeName;
+}
+
+let PRODUCTS=[];
+
+function loadProductsFromServer(){ renderProducts(); }
+
+/* Live inventory from the Admin Panel via Firebase. As soon as admin
+   adds/deletes a product, it appears/disappears here automatically.
+   No dummy/demo products — if admin hasn't added anything yet, the
+   storefront simply shows an empty state. */
+db.ref("inventory").on("value",snap=>{
+  const val=snap.val()||{};
+  const keys=Object.keys(val);
+  PRODUCTS = keys.map(k=>{
+        const p=val[k];
+        return {id:p.id||k,n:p.title,p:Number(p.price)||0,s:p.subtitle||"Premium quality jewellery item",c:p.category||"all",photos:(p.photos&&p.photos.length)?p.photos:(p.photo?[p.photo]:[]),icon:"box"};
+      });
+  renderProducts();
+  if(window.currentOpenProductId && document.getElementById("productDetail")?.classList.contains("active")){
+    if(PRODUCTS.some(p=>p.id===window.currentOpenProductId))openProduct(window.currentOpenProductId);
+  }
+});
+
+function productMedia(x){
+  if(x.photos&&x.photos.length)return `<img class="product-photo" src="${x.photos[0]}" alt="${x.n}" loading="lazy">`;
+  return productIcon(x.icon||"box");
+}
+
+// One-time cleanup: earlier testing (during earlier UI testing) left
+// fake cart items and fake orders sitting in this browser's storage.
+// Local UI storage is reset once so old demo data does not appear.
+if(localStorage.getItem("sw_data_version")!=="3"){
+  localStorage.removeItem("sw_cart");
+  localStorage.removeItem("sw_orders");
+  localStorage.setItem("sw_data_version","3");
+}
+let cart=JSON.parse(localStorage.getItem("sw_cart")||"[]"),orders=JSON.parse(localStorage.getItem("sw_orders")||"[]");
+let activeCategory="all";
+let profileData=JSON.parse(localStorage.getItem("sw_profile")||"{}"),logged=localStorage.getItem("sw_login")==="1";
+const money=n=>"₹"+Number(n).toLocaleString("en-IN");
+const save=()=>{
+  localStorage.setItem("sw_cart",JSON.stringify(cart));
+  renderCart();
+};
+function toast(t){let x=document.getElementById("toast");x.textContent=t;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),1800)}
+
+function productIcon(type){
+ const common='viewBox="0 0 24 24" fill="none" stroke="#171717" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"';
+ const icons={
+  shirt:`<svg ${common}><path d="M8 4 4 7l2 4 2-1v10h8V10l2 1 2-4-4-3-2 1.5h-4L8 4Z"/></svg>`,
+  shoe:`<svg ${common}><path d="M3 19v-3.2c1.8-.5 3-1.7 3.8-3.8l1.7 2.3c1.7 1 3.7 1.2 5.7.7l1.6 1.3H20a1.5 1.5 0 0 1 1.5 1.5V19H3Z"/><path d="M8.5 10.5V6.8"/></svg>`,
+  jeans:`<svg ${common}><path d="M7.5 3h9l1 18h-4.2l-1.1-9.5L11.1 21H6.9L7.5 3Z"/><path d="M7.7 7.5h8.6"/></svg>`,
+  hoodie:`<svg ${common}><path d="M9 4c.7 1.8 4.3 1.8 5 0l3.5 1.7 1.8 4.3-3.3 1.6L15 10v10H8.5V10l-1 1.6-3.3-1.6L6 5.7 9 4Z"/><path d="M9.3 8.2a2.7 2.7 0 0 0 5.4 0"/></svg>`,
+  cap:`<svg ${common}><path d="M4.5 14.5c0-4.7 3.2-8.5 7.5-8.5s7.5 3.8 7.5 8.5"/><path d="M2.5 15.3c5.6 1.9 13.4 1.9 19 0-1 2-2.9 3-9.5 3s-8.5-1-9.5-3Z"/></svg>`,
+  box:`<svg ${common}><path d="m4 8 8-4 8 4-8 4-8-4Z"/><path d="M4 8v9l8 4 8-4V8"/><path d="M12 12v9"/></svg>`
+ };
+ return `<div class="icon-badge">${icons[type]||icons.shirt}</div>`;
+}
+
+function setCategory(category,btn){
+ activeCategory=category;
+ document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
+ if(btn)btn.classList.add("active");
+ renderProducts();
+}
+function renderProducts(){
+ let q=document.getElementById("search").value.toLowerCase();
+ let a=PRODUCTS.filter(x=>{
+   let matchesSearch=(x.n+" "+x.s+" "+x.c).toLowerCase().includes(q);
+   let matchesCategory=activeCategory==="all" || x.c===activeCategory;
+   return matchesSearch && matchesCategory;
+ });
+ document.getElementById("products").innerHTML=a.length
+ ?a.map(x=>`<article class="card product">
+  <div class="pic" onclick="openProduct('${x.id}')">${productMedia(x)}</div>
+  <h3 onclick="openProduct('${x.id}')" title="${x.n}">${x.n}</h3>
+  <div class="sub">${x.s}</div>
+  <div class="price" id="homePrice-${x.id}" data-unit-price="${x.p}">${money(x.p)}</div>
+  <div class="product-actions">
+    <div class="home-qty" aria-label="Quantity for ${x.n}">
+      <button type="button" onclick="changeHomeQty('${x.id}',-1)">−</button>
+      <input id="homeQty-${x.id}" type="number" min="1" max="999" value="1" oninput="sanitizeHomeQty('${x.id}')" aria-label="Quantity">
+      <button type="button" onclick="changeHomeQty('${x.id}',1)">+</button>
+    </div>
+    <button class="add" onclick="add('${x.id}',getHomeQty('${x.id}'))">ADD TO CART</button>
+  </div>
+</article>`).join("")
+ :`<div class="card empty">${PRODUCTS.length?"No products found in this category.":"No products available yet. Please check back soon."}</div>`;
+}
+function add(id,amount=1){
+ id=String(id);
+ let p=PRODUCTS.find(x=>x.id===id);if(!p)return;
+ amount=Math.max(1,Math.min(999,Number(amount)||1));
+ let x=cart.find(x=>x.id===id);
+ x?x.qty=Math.min(999,x.qty+amount):cart.push({id:p.id,n:p.n,p:p.p,qty:amount});
+ save();toast(amount>1?`${amount} items added to cart`:"Added to cart")
+}
+function getDetailQty(){
+ const el=document.getElementById("detailQty");
+ return Math.max(1,Math.min(999,Number(el?.value)||1));
+}
+function updateDetailPrice(){
+ const priceEl=document.getElementById("detailPrice");
+ if(!priceEl)return;
+ const unitPrice=Number(priceEl.dataset.unitPrice)||0;
+ priceEl.textContent=money(unitPrice*getDetailQty());
+}
+function sanitizeDetailQty(){
+ const el=document.getElementById("detailQty");
+ if(!el)return;
+ el.value=getDetailQty();
+ updateDetailPrice();
+}
+function changeDetailQty(delta){
+ const el=document.getElementById("detailQty");if(!el)return;
+ el.value=Math.max(1,Math.min(999,(Number(el.value)||1)+delta));
+ updateDetailPrice();
+}
+
+function getHomeQty(id){
+  const el=document.getElementById(`homeQty-${id}`);
+  return Math.max(1,Math.min(999,Number(el?.value)||1));
+}
+function updateHomeAmount(id){const p=PRODUCTS.find(x=>x.id===id),el=document.getElementById(`homePrice-${id}`);if(p&&el)el.textContent=money(p.p*getHomeQty(id));}
+function changeHomeQty(id,delta){const el=document.getElementById(`homeQty-${id}`);if(!el)return;el.value=Math.max(1,Math.min(999,(Number(el.value)||1)+delta));updateHomeAmount(id);}
+function sanitizeHomeQty(id){const el=document.getElementById(`homeQty-${id}`);if(!el)return;el.value=getHomeQty(id);updateHomeAmount(id);}
+
+function openProduct(id){
+ id=String(id);
+ let x=PRODUCTS.find(p=>p.id===id);
+ if(!x)return;
+ window.currentOpenProductId=id;
+ const gallery=(x.photos&&x.photos.length>1) ? `
+   <div class="detail-gallery-col">
+     <div class="pic detail-pic" id="detailMainPic">${productMedia(x)}</div>
+     <div class="gallery-thumbs">${x.photos.map((src,i)=>`<div class="gallery-thumb ${i===0?'active':''}" onclick="switchDetailPhoto('${x.id}',${i},this)"><img src="${src}" alt="${x.n} photo ${i+1}"></div>`).join('')}</div>
+   </div>` : `<div class="pic detail-pic">${productMedia(x)}</div>`;
+ document.getElementById("productDetailCard").innerHTML=`
+  <div class="detail-layout">
+   ${gallery}
+   <div class="detail-info">
+    <h2>${x.n}</h2>
+    <div class="sub">${x.s}</div>
+    <div class="price" id="detailPrice" data-unit-price="${x.p}">${money(x.p)}</div>
+    <div class="detail-qty">
+      <label for="detailQty">Quantity</label>
+      <div class="qty-control">
+        <button type="button" onclick="changeDetailQty(-1)">−</button>
+        <input id="detailQty" type="number" min="1" max="999" value="1" oninput="sanitizeDetailQty()">
+        <button type="button" onclick="changeDetailQty(1)">+</button>
+      </div>
+    </div>
+    <div class="detail-actions">
+      <button class="add" onclick="add('${x.id}', getDetailQty())">ADD TO CART</button>
+      <button class="buy-now" onclick="buyNow('${x.id}', getDetailQty())">BUY NOW</button>
+    </div>
+   </div>
+  </div>`;
+ renderRelatedProducts(x.id);
+ page("productDetail",null,"productDetail:"+x.id);
+}
+function switchDetailPhoto(id,i,thumbEl){
+ const x=PRODUCTS.find(p=>p.id===id);
+ if(!x||!x.photos||!x.photos[i])return;
+ const mainPic=document.getElementById("detailMainPic");
+ if(mainPic) mainPic.innerHTML=`<img class="product-photo" src="${x.photos[i]}" alt="${x.n}" loading="lazy">`;
+ document.querySelectorAll(".gallery-thumb").forEach(t=>t.classList.remove("active"));
+ if(thumbEl) thumbEl.classList.add("active");
+}
+function renderRelatedProducts(excludeId){
+ let current=PRODUCTS.find(p=>p.id===excludeId);
+ let others=PRODUCTS.filter(x=>x.id!==excludeId && (!current || x.c===current.c));
+ if(!others.length)others=PRODUCTS.filter(x=>x.id!==excludeId);
+ document.getElementById("relatedProducts").innerHTML=others.map(x=>`<article class="card product">
+  <div class="pic" onclick="openProduct('${x.id}')">${productMedia(x)}</div>
+  <h3 onclick="openProduct('${x.id}')" title="${x.n}">${x.n}</h3>
+  <div class="sub">${x.s}</div>
+  <div class="price">${money(x.p)}</div>
+  <div class="product-actions">
+    <button class="add" onclick="add('${x.id}')">ADD TO CART</button>
+    <button class="buy-now" onclick="buyNow('${x.id}')">BUY NOW</button>
+  </div>
+ </article>`).join("");
+}
+
+
+function checkoutItems(){
+  return cart.filter(x=>x.qty>0);
+}
+function checkoutSubtotal(){
+  return checkoutItems().reduce((a,x)=>a+x.p*x.qty,0);
+}
+let checkoutPincodeInfo=null;
+let pincodeLookupTimer=null;
+async function lookupPincode(pincode, mode="checkout"){
+  const input=document.getElementById(mode==="profile"?"pincode":"coPincode");
+  const status=document.getElementById(mode==="profile"?"pincodeStatus":"coPincodeStatus");
+  const meta=document.getElementById(mode==="profile"?"pincodeMeta":"coPincodeMeta");
+  if(!input||!status)return null;
+  const pin=String(pincode||"").replace(/\D/g,"").slice(0,6);
+  input.value=pin;
+  if(pin.length!==6){status.className="pincode-status";status.textContent=pin?"Enter a 6-digit pincode.":"";if(meta)meta.style.display="none";input.classList.remove("pincode-valid","pincode-invalid");return null;}
+  status.className="pincode-status loading";status.textContent="Checking pincode…";
+  if(meta)meta.style.display="none";input.classList.remove("pincode-valid","pincode-invalid");
+  try{
+    const res=await fetch("https://api.postalpincode.in/pincode/"+pin,{cache:"no-store"});
+    const data=await res.json();
+    const row=data?.[0];
+    if(!row||row.Status!=="Success"||!Array.isArray(row.PostOffice)||!row.PostOffice.length)throw new Error("Invalid pincode");
+    const offices=row.PostOffice;
+    const first=offices[0];
+    const districts=[...new Set(offices.map(x=>x.District).filter(Boolean))];
+    const states=[...new Set(offices.map(x=>x.State).filter(Boolean))];
+    const areas=[...new Set(offices.map(x=>x.Name).filter(Boolean))];
+    const info={pincode:pin,state:states[0]||"",district:districts[0]||"",areas,offices};
+    status.className="pincode-status ok";status.textContent="✓ Valid pincode";
+    input.classList.add("pincode-valid");
+    if(meta){meta.style.display="block";meta.innerHTML=`<strong>Location found:</strong> ${info.district||"—"}, ${info.state||"—"}<br><span>Post Office: ${areas.slice(0,3).join(", ")}${areas.length>3?"…":""}</span>`;}
+    if(mode==="checkout"){checkoutPincodeInfo=info;}
+    return info;
+  }catch(e){
+    status.className="pincode-status err";status.textContent="✕ Invalid pincode. Please check the 6-digit PIN.";
+    input.classList.add("pincode-invalid");
+    if(meta)meta.style.display="none";
+    if(mode==="checkout")checkoutPincodeInfo=null;
+    return null;
+  }
+}
+function setupPincodeValidation(){
+  const co=document.getElementById("coPincode");
+  if(co){co.addEventListener("input",()=>{clearTimeout(pincodeLookupTimer);checkoutPincodeInfo=null;const v=co.value.replace(/\D/g,"").slice(0,6);co.value=v;if(v.length===6)pincodeLookupTimer=setTimeout(()=>lookupPincode(v,"checkout"),180);else{document.getElementById("coPincodeStatus").textContent=v?"Enter a 6-digit pincode.":"";document.getElementById("coPincodeStatus").className="pincode-status";document.getElementById("coPincodeMeta").style.display="none";co.classList.remove("pincode-valid","pincode-invalid");}});}
+  const pr=document.getElementById("pincode");
+  if(pr){pr.addEventListener("input",()=>{clearTimeout(pincodeLookupTimer);const v=pr.value.replace(/\D/g,"").slice(0,6);pr.value=v;if(v.length===6)pincodeLookupTimer=setTimeout(()=>lookupPincode(v,"profile"),180);});}
+}
+function saveCheckoutAddress(){
+  let fields=["coName","coPhone","coAddress","coLandmark","coPincode"];
+  let vals=fields.map(id=>document.getElementById(id).value.trim());
+  if(!vals[0]||!/^[0-9]{10}$/.test(vals[1])||!vals[2]||!/^[0-9]{6}$/.test(vals[4])){showNotice("Check Your Details","Please enter a valid name, 10 digit mobile number, address and 6 digit pincode.","OK",null,"warn");return;}
+  if(!checkoutPincodeInfo||checkoutPincodeInfo.pincode!==vals[4]){showNotice("Invalid Pincode","Please enter a valid 6-digit Indian pincode and wait for the location to be verified.","OK",null,"warn");return;}
+  profileData={name:vals[0],phone:vals[1],address:vals[2],landmark:vals[3],pincode:vals[4],state:checkoutPincodeInfo.state,district:checkoutPincodeInfo.district,postOffice:checkoutPincodeInfo.areas?.[0]||""};
+  localStorage.setItem("sw_profile",JSON.stringify(profileData));
+  renderSummary();page("checkoutSummary");
+}
+function loadCheckoutAddress(){
+  document.getElementById("coName").value=profileData.name||"";
+  document.getElementById("coPhone").value=profileData.phone||"";
+  document.getElementById("coAddress").value=profileData.address||"";
+  document.getElementById("coLandmark").value=profileData.landmark||"";
+  document.getElementById("coPincode").value=profileData.pincode||"";
+  checkoutPincodeInfo=null;
+  if(/^\d{6}$/.test(profileData.pincode||"")) setTimeout(()=>lookupPincode(profileData.pincode,"checkout"),50);
+}
+function minOrderShortfall(subtotal){
+  if(!minOrderEnabled) return 0;
+  return subtotal < minOrderValue ? (minOrderValue - subtotal) : 0;
+}
+function startCheckout(){
+  if(!cart.length){showNotice("Cart is Empty","Please add some products to your cart before proceeding.","OK",null,"info");return}
+  const shortfall = minOrderShortfall(cart.reduce((a,x)=>a+x.p*x.qty,0));
+  if(shortfall>0){showNotice("Minimum Order Not Reached",`Please add ${money(shortfall)} more worth of products to reach the minimum order value of ${money(minOrderValue)}.`,"OK",null,"warn");return}
+  if(!logged){showNotice("Login Required","Please login to your account to continue with your order.","Login Now",()=>login(),"lock");return}
+  loadCheckoutAddress();
+  page("checkoutAddress");
+}
+function buyNow(id,amount=1){
+  id=String(id);
+  let p=PRODUCTS.find(x=>x.id===id);
+  if(!p)return;
+  amount=Math.max(1,Math.min(999,Number(amount)||1));
+  const shortfall = minOrderShortfall(p.p*amount);
+  if(shortfall>0){showNotice("Minimum Order Not Reached",`This order is ${money(shortfall)} short of the minimum order value of ${money(minOrderValue)}. Please add more items to your cart instead.`,"OK",null,"warn");return}
+  cart=[{id:p.id,n:p.n,p:p.p,qty:amount}];
+  save();
+  if(!logged){showNotice("Login Required","Please login to your account to continue with your order.","Login Now",()=>login(),"lock");return}
+  loadCheckoutAddress();
+  page("checkoutAddress");
+}
+function renderSummary(){
+  let items=checkoutItems();
+  let subtotal=checkoutSubtotal();
+  document.getElementById("summaryItems").innerHTML=items.map(x=>`
+    <div class="summary-item">
+      <div><div class="summary-name">${x.n}</div><div class="summary-meta">₹${Number(x.p).toLocaleString("en-IN")} × ${x.qty}</div></div>
+      <div class="summary-price">${money(x.p*x.qty)}</div>
+    </div>`).join("");
+  const shipNow=effectiveShipping(subtotal);
+  document.getElementById("summaryProductAmount").textContent=money(subtotal);
+  document.getElementById("summaryShipping").innerHTML = shipNow===0 && shippingCost>0 ? `<span style="color:#1a7a3c">FREE</span>` : money(shipNow);
+  document.getElementById("summaryGrandTotal").textContent=money(subtotal+shipNow);
+  let d=new Date(); d.setDate(d.getDate()+6);
+  document.getElementById("deliveryDate").textContent=d.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
+}
+function editCheckoutAddress(){
+  loadCheckoutAddress();
+  page("checkoutAddress");
+}
+function openPayment(){
+  renderPayment();
+  page("payment");
+}
+function renderPaymentAmount(method){
+  const subtotal=checkoutSubtotal();
+  const ship=effectiveShipping(subtotal);
+  const base=subtotal+ship;
+  const discount=method==="PREPAID" ? prepaidDiscountAmount(base) : 0;
+  const total=base-discount;
+  const shipLine = ship===0 && shippingCost>0 ? `<span style="color:#1a7a3c">FREE</span>` : money(ship);
+  document.getElementById("paymentAmount").innerHTML=`
+    <div class="amount-line"><span>Product Amount</span><strong>${money(subtotal)}</strong></div>
+    <div class="amount-line"><span>Shipping</span><strong>${shipLine}</strong></div>
+    ${discount>0?`<div class="amount-line"><span>Prepaid Discount (${prepaidDiscountPercent}%)</span><strong style="color:#1a7a3c">-${money(discount)}</strong></div>`:""}
+    <div class="amount-line grand"><span>Total Payable</span><strong id="paymentTotal">${money(total)}</strong></div>`;
+  return total;
+}
+function renderPayment(){
+  const method=codEnabled?"COD":"PREPAID";
+  renderPaymentAmount(method);
+  paymentStage="select";
+  clearInterval(qrTimerInterval);
+  document.getElementById("prepaidBox").style.display="none";
+  document.getElementById("utrInput").value="";
+  const codRadio=document.querySelector('input[name="paymentMethod"][value="COD"]');
+  const prepaidRadio=document.querySelector('input[name="paymentMethod"][value="PREPAID"]');
+  if(codEnabled){
+    document.getElementById("codOption").classList.add("selected");
+    document.getElementById("prepaidOption").classList.remove("selected");
+    if(codRadio) codRadio.checked=true;
+    document.getElementById("paymentActionBtn").textContent="Place COD Order";
+  }else{
+    document.getElementById("codOption").classList.remove("selected");
+    document.getElementById("prepaidOption").classList.add("selected");
+    if(codRadio){ codRadio.checked=false; codRadio.disabled=true; }
+    if(prepaidRadio) prepaidRadio.checked=true;
+    document.getElementById("paymentActionBtn").textContent="Pay Now";
+  }
+  document.getElementById("paymentActionBtn").disabled=false;
+  renderCODAvailability();
+}
+function selectPayment(method){
+  if(method === "COD" && !codEnabled){
+    const prepaid=document.querySelector('input[name="paymentMethod"][value="PREPAID"]');
+    if(prepaid){ prepaid.checked=true; }
+    showNotice("COD Unavailable","Cash on Delivery is currently unavailable. Please select Prepaid via UPI.","OK",null,"warn");
+    return;
+  }
+  document.getElementById("codOption").classList.toggle("selected",method==="COD");document.getElementById("prepaidOption").classList.toggle("selected",method==="PREPAID");paymentStage="select";clearInterval(qrTimerInterval);document.getElementById("prepaidBox").style.display="none";document.getElementById("utrInput").value="";renderPaymentAmount(method);const feeLine=document.getElementById("codFeeLine");if(feeLine)feeLine.style.display="none";document.getElementById("paymentActionBtn").disabled=false;document.getElementById("paymentActionBtn").textContent=method==="COD"?"Place COD Order":"Pay Now";
+}
+function buildUpiLink(amount){return `upi://pay?pa=${encodeURIComponent(MERCHANT_UPI_ID)}&pn=${encodeURIComponent("Jewellery Row")}&am=${Number(amount).toFixed(2)}&cu=INR`;}
+function renderRealQr(amount,holderId="qrCodeHolder"){const holder=document.getElementById(holderId);if(!holder)return;holder.innerHTML="";const upiLink=buildUpiLink(amount);if(window.QRCode)new QRCode(holder,{text:upiLink,width:210,height:210,colorDark:"#2b1b12",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});else holder.innerHTML=`<div style="padding:18px;font-size:12px;color:#6b7280;text-align:center">QR service unavailable. Please use the UPI ID below.</div>`;}
+function copyUpiId(){const id=MERCHANT_UPI_ID;if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(id).then(()=>toast("UPI ID copied"));else{const t=document.createElement("textarea");t.value=id;document.body.appendChild(t);t.select();document.execCommand("copy");t.remove();toast("UPI ID copied");}}
+let paymentStage="select",qrTimerInterval=null,qrSecondsLeft=300;
+function updateQrCountdown(){const m=Math.floor(qrSecondsLeft/60),sec=qrSecondsLeft%60,text=`${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;const a=document.getElementById("qrTimer");if(a)a.textContent=text;const b=document.getElementById("modalQrTimer");if(b)b.textContent=text;}
+function startQrTimer(){clearInterval(qrTimerInterval);qrSecondsLeft=300;updateQrCountdown();const pageBtn=document.getElementById("paymentActionBtn"),modalBtn=document.getElementById("modalPaymentActionBtn"),modalUtr=document.getElementById("modalUtrInput");if(pageBtn)pageBtn.disabled=false;if(modalBtn){modalBtn.disabled=false;modalBtn.textContent="Confirm Prepaid Order";}document.getElementById("utrInput").disabled=false;if(modalUtr)modalUtr.disabled=false;qrTimerInterval=setInterval(()=>{qrSecondsLeft--;updateQrCountdown();if(qrSecondsLeft<=0){clearInterval(qrTimerInterval);if(pageBtn){pageBtn.disabled=true;pageBtn.textContent="QR Expired";}if(modalBtn){modalBtn.disabled=true;modalBtn.textContent="QR Expired";}document.getElementById("utrInput").disabled=true;if(modalUtr)modalUtr.disabled=true;}},1000);}
+function openPrepaidModal(){const subtotal=checkoutSubtotal();const ship=effectiveShipping(subtotal);const base=subtotal+ship;const total=base-prepaidDiscountAmount(base);document.getElementById("modalPrepaidAmount").textContent=money(total);document.getElementById("modalUpiIdValue").textContent=MERCHANT_UPI_ID;document.getElementById("modalUtrInput").value="";renderRealQr(total,"modalQrCodeHolder");document.body.classList.add("prepaid-open");document.getElementById("prepaidModal").classList.add("show");startQrTimer();setTimeout(()=>document.getElementById("modalUtrInput")?.focus(),180);}
+function closePrepaidModal(){clearInterval(qrTimerInterval);document.body.classList.remove("prepaid-open");document.getElementById("prepaidModal").classList.remove("show");}
+async function handlePaymentAction(){const method=document.querySelector('input[name="paymentMethod"]:checked')?.value||"COD";if(method==="COD"){if(!codEnabled){renderPayment();showNotice("COD Unavailable","Cash on Delivery is currently unavailable. Please select Prepaid via UPI.","OK",null,"warn");return;}completePayment();return;}paymentStage="pay";openPrepaidModal();document.getElementById("paymentActionBtn").textContent="UPI Payment Open";}
+function confirmPrepaidFromModal(){if(qrSecondsLeft<=0){showNotice("Payment Window Expired","The 5-minute UPI payment window has expired. Please generate a new QR code.","OK",null,"warn");return}const utr=(document.getElementById("modalUtrInput")?.value||"").trim();if(!utr)return showNotice("UTR Required","Please enter the UTR / UPI transaction ID after completing payment.","OK",null,"warn");if(utr.length<6)return showNotice("Invalid UTR","Please enter a valid UTR / transaction ID.","OK",null,"warn");document.getElementById("utrInput").value=utr;closePrepaidModal();completePayment(utr);}
+async function completePayment(utr){
+  const actionBtn=document.getElementById("paymentActionBtn");
+  const modalBtn=document.getElementById("modalPaymentActionBtn");
+  if(actionBtn)actionBtn.disabled=true;
+  if(modalBtn)modalBtn.disabled=true;
+  let method=document.querySelector('input[name="paymentMethod"]:checked')?.value||"COD",
+    subtotal=checkoutSubtotal(),
+    shipping=effectiveShipping(subtotal),
+    discount=method==="PREPAID" ? prepaidDiscountAmount(subtotal+shipping) : 0,
+    total=subtotal+shipping-discount,
+    orderDate=new Date(),
+    delivery=new Date(orderDate);
+  delivery.setDate(delivery.getDate()+6);
+  const orderItems=JSON.parse(JSON.stringify(checkoutItems()));
+  const orderId="JR-"+Date.now()+"-"+Math.random().toString(36).substring(2,8);
+  const orderObj={id:orderId,customerPhone:profileData.phone||"",date:orderDate.toLocaleString("en-IN"),deliveryDate:delivery.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}),subtotal,shipping,discount,total,items:orderItems,payment:method,utr:utr||null,status:"PLACED",placedAt:orderDate.getTime(),updatedAt:orderDate.getTime(),address:JSON.parse(JSON.stringify(profileData)),history:[{status:"PLACED",at:orderDate.getTime(),label:"Order Placed"}]};
+  orders.unshift(orderObj);
+  db.ref("orders/"+orderId).set(orderObj);
+  cart=[];save();
+  document.getElementById("successText").textContent=`Order #${orderId} confirmed • ${method==="COD"?"Cash on Delivery":"Prepaid (UPI)"} • Delivery by ${delivery.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}.`;
+  document.getElementById("successBadges").innerHTML=`<span class="success-badge">✓ Payment: ${method==="COD"?"COD":"Prepaid"}</span><span class="success-badge">✓ Total: ${money(total)}</span><span class="success-badge">✓ Status: Placed</span>`;
+  if(actionBtn)actionBtn.disabled=false;
+  if(modalBtn)modalBtn.disabled=false;
+  page("orderSuccess");
+}
+
+function renderCart(){
+ document.getElementById("count").textContent=cart.reduce((a,x)=>a+x.qty,0);
+ let box=document.getElementById("cartList");
+ if(!cart.length){box.innerHTML='<div class="empty">Your cart is empty.<br><br>Go to Home and add products.</div>';}
+ else box.innerHTML=cart.map(x=>{
+   const prod=PRODUCTS.find(p=>p.id===x.id);
+   const thumb=`<div class="cart-thumb">${prod?productMedia(prod):productIcon("box")}</div>`;
+   return `<div class="row cart-row" onclick="openProduct('${x.id}')" style="cursor:pointer"><div class="cart-product-info">${thumb}<div class="cart-product-text"><b class="cart-product-name" title="${x.n}">${x.n}</b><div class="sub">${money(x.p)} each</div></div></div><div class="cart-row-actions" onclick="event.stopPropagation()"><div class="qty"><button type="button" onclick="qty('${x.id}',-1)">−</button><b style="min-width:22px;text-align:center;font-size:13px">${x.qty}</b><button type="button" onclick="qty('${x.id}',1)">+</button></div><strong>${money(x.p*x.qty)}</strong><button type="button" class="remove-cart" aria-label="Remove ${x.n}" onclick="removeFromCart('${x.id}')">Remove</button></div></div>`;
+ }).join("");
+ const cartSubtotal=cart.reduce((a,x)=>a+x.p*x.qty,0);
+ document.getElementById("total").textContent=money(cartSubtotal);
+ const shortfall=minOrderShortfall(cartSubtotal);
+ let banner=document.getElementById("minOrderBanner");
+ if(cart.length && shortfall>0){
+   if(!banner){
+     banner=document.createElement("div");
+     banner.id="minOrderBanner";
+     banner.style.cssText="margin:10px 0;padding:10px 14px;border-radius:10px;background:#fff3cd;color:#7a5b00;font-size:13px;font-weight:600;text-align:center;";
+     box.parentNode.insertBefore(banner,box.nextSibling);
+   }
+   banner.textContent=`Add ${money(shortfall)} more to reach the minimum order of ${money(minOrderValue)}`;
+   banner.style.display="block";
+ } else if(banner){
+   banner.style.display="none";
+ }
+}
+function qty(id,d){let x=cart.find(x=>x.id===id);if(!x)return;x.qty+=d;if(x.qty<1)cart=cart.filter(x=>x.id!==id);save()}
+function removeFromCart(id){const item=cart.find(x=>x.id===id);if(!item)return;cart=cart.filter(x=>x.id!==id);save();toast(`${item.n} removed from cart`);}
+let pageHistory=["home"];
+let navigatingBack=false;
+function goBackPage(){
+  if(pageHistory.length<=1){ page("home"); return; }
+  pageHistory.pop();
+  const previous=pageHistory[pageHistory.length-1];
+  navigatingBack=true;
+  if(previous.startsWith("productDetail:")){
+    const prodId=previous.slice("productDetail:".length);
+    if(PRODUCTS.some(p=>p.id===prodId)){
+      openProduct(prodId);
+    }else{
+      page("home");
+    }
+  }else{
+    page(previous);
+  }
+  navigatingBack=false;
+}
+function page(id,btn,historyKey){
+ historyKey = historyKey || id;
+ closeLogin();
+ closeNotice();
+ if(["orders","orderDetail","cart","checkoutAddress","checkoutSummary","payment","orderSuccess","profile"].includes(id) && !logged){
+   if(id!=="orderSuccess")showNotice("Login Required","Please login to view your account data.","Login Now",()=>login(),"lock");
+   return;
+ }
+ if(document.getElementById("prepaidModal")?.classList.contains("show"))closePrepaidModal();
+ if(!navigatingBack && pageHistory[pageHistory.length-1]!==historyKey){ pageHistory.push(historyKey); }
+ document.getElementById("siteHeader").classList.toggle("sub-page",id!=="home");
+ updateHeaderAccount();
+ const back=document.getElementById("globalBack");
+ if(back)back.classList.toggle("show",id!=="home");
+ document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ if(id==="home"){
+   document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
+   let homeBtn=document.querySelector('[data-category="all"]');
+   if(homeBtn)homeBtn.classList.add("active");
+   activeCategory="all";
+   renderProducts();
+ }
+ if(id==="cart")renderCart();
+ if(id==="orders"){renderOrders();syncOrderStatuses();}
+ if(id==="profile")loadProfile();
+ scrollTo({top:0,behavior:"auto"});
+}
+function updateHeaderAccount(){
+ const label=document.getElementById("accountLabel");
+ if(!label)return;
+ if(!logged){label.textContent="Login";return}
+ label.textContent=profileData.name||profileData.phone||"Account";
+}
+function accountAction(){
+ if(!logged){login();return}
+ page("profile");
+}
+function logout(){
+  logged=false;
+  localStorage.removeItem("sw_login");
+  window.currentOpenOrderId=null;
+  // Immediately remove private account data from the active UI.
+  orders=[];
+  cart=[];
+  renderOrders();
+  renderCart();
+  document.getElementById("orderDetailCard").innerHTML="";
+  updateHeaderAccount();
+  toast("Logged out successfully");
+  page("home");
+}
+function login(){document.getElementById("loginModal").classList.add("show");const phone=document.getElementById("loginPhone");if(phone){phone.value="";phone.focus();}document.getElementById("loginStatus").textContent=""}
+function closeLogin(){document.getElementById("loginModal").classList.remove("show")}
+
+let noticeCallback=null;
+const noticeIcons={
+ info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>',
+ lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>',
+ warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4M12 17h.01"/></svg>'
+};
+function showNotice(title,text,btnText,callback,icon){
+ document.getElementById("noticeTitle").textContent=title;
+ document.getElementById("noticeText").textContent=text;
+ document.getElementById("noticeBtn").textContent=btnText||"OK";
+ let iconBox=document.getElementById("noticeIcon");
+ iconBox.className="notice-icon"+(icon==="warn"?" warn":"");
+ iconBox.innerHTML=noticeIcons[icon]||noticeIcons.info;
+ noticeCallback=callback||null;
+ document.getElementById("noticeModal").classList.add("show");
+}
+function closeNotice(){document.getElementById("noticeModal").classList.remove("show");noticeCallback=null}
+function noticeConfirm(){let cb=noticeCallback;closeNotice();if(cb)cb()}
+function loginWithPhone(){
+  const p=document.getElementById("loginPhone").value.trim();
+  if(!/^\d{10}$/.test(p))return showNotice("Invalid Number","Please enter a valid 10 digit mobile number.","OK",null,"warn");
+  let accounts=JSON.parse(localStorage.getItem("sw_accounts")||"{}");
+  const existing=accounts[p];
+  const finish=()=>{
+    logged=true;
+    profileData=existing||{phone:p};
+    profileData.phone=p;
+    accounts[p]=profileData;
+    localStorage.setItem("sw_accounts",JSON.stringify(accounts));
+    localStorage.setItem("sw_login","1");
+    localStorage.setItem("sw_profile",JSON.stringify(profileData));
+    // Reload account-scoped data after login.
+    cart=JSON.parse(localStorage.getItem("sw_cart")||"[]");
+    renderOrders();
+    renderCart();
+    closeLogin();
+    updateHeaderAccount();
+    toast(existing?"Login successful":"Account created successfully");
+    
+  };
+  document.getElementById("loginStatus").textContent=existing?"Logging you in...":"Creating your account...";
+  setTimeout(finish,3500);
+}
+function sendOtp(){ loginWithPhone(); }
+function verifyOtp(){ loginWithPhone(); }
+function loadProfile(){["name","phone","address","landmark","pincode"].forEach(k=>document.getElementById(k).value=profileData[k]||"")}
+async function saveProfile(){
+ const pin=document.getElementById("pincode").value.trim();
+ if(pin&&!/^\d{6}$/.test(pin)){document.getElementById("profileMsg").textContent="Please enter a valid 6-digit pincode.";return;}
+ let info=null;if(pin)info=await lookupPincode(pin,"profile");
+ if(pin&&!info){document.getElementById("profileMsg").textContent="Invalid pincode. Please correct it before saving.";return;}
+ ["name","phone","address","landmark","pincode"].forEach(k=>profileData[k]=document.getElementById(k).value.trim());
+ if(info){profileData.state=info.state;profileData.district=info.district;profileData.postOffice=info.areas?.[0]||"";}
+ localStorage.setItem("sw_profile",JSON.stringify(profileData));updateHeaderAccount();document.getElementById("profileMsg").textContent="Profile saved successfully.";
+}
+const ORDER_STAGES=[{key:"PLACED",label:"Placed",icon:"✓"},{key:"CONFIRMED",label:"Confirmed",icon:"✓"},{key:"READY_TO_SHIP",label:"Ready to Ship",icon:"▣"},{key:"IN_TRANSIT",label:"In Transit",icon:"↗"},{key:"OUT_FOR_DELIVERY",label:"Out for Delivery",icon:"⌁"},{key:"DELIVERED",label:"Delivered",icon:"✓"},{key:"RTO",label:"RTO",icon:"↩"},{key:"REJECTED",label:"Rejected",icon:"×"}];
+
+function getOrderStageIndex(status){const i=ORDER_STAGES.findIndex(x=>x.key===status);return i<0?0:i;}
+function getOrderStatusLabel(status){if(status==="CANCELLED")return "Cancelled";return ORDER_STAGES.find(x=>x.key===status)?.label||status||"Placed";}
+function normalizeOrder(o){if(!o.history)o.history=[{status:o.status||"PLACED",at:o.placedAt||Date.now(),label:(o.status||"PLACED").replaceAll("_"," ")}];if(!o.updatedAt)o.updatedAt=o.placedAt||Date.now();if(!o.status)o.status="PLACED";return o;}
+function canCancelOrder(o){return o.status!=="CANCELLED"&&getOrderStageIndex(o.status)<getOrderStageIndex("OUT_FOR_DELIVERY")&&(!o.placedAt||Date.now()-o.placedAt<=24*60*60*1000);}
+/* Live order sync via Firebase: customer's placed orders and any status
+   change made by admin reflect here instantly on any device. */
+function syncOrderStatuses(){}
+db.ref("orders").on("value",snap=>{
+  const val=snap.val()||{};
+  orders=Object.keys(val).map(k=>val[k]).sort((a,b)=>(b.placedAt||0)-(a.placedAt||0));
+  renderOrders();
+  const current=orders.find(o=>o.id===window.currentOpenOrderId);
+  if(current && orderBelongsToCurrentUser(current) && document.getElementById("orderDetail")?.classList.contains("active"))renderOrderDetail(current);
+});
+function currentUserPhone(){return logged ? String(profileData.phone||"").trim() : "";}
+function orderBelongsToCurrentUser(o){
+  const phone=currentUserPhone();
+  if(!phone)return false;
+  const owner=String(o.customerPhone||o.address?.phone||"").trim();
+  return owner===phone;
+}
+function visibleOrders(){
+  return logged ? orders.filter(orderBelongsToCurrentUser) : [];
+}
+function renderOrders(){
+  let b=document.getElementById("ordersList");
+  if(!logged){b.innerHTML='<div class="empty">Please login to view your orders.</div>';return;}
+  orders=orders.map(normalizeOrder);
+  localStorage.setItem("sw_orders",JSON.stringify(orders));
+  const mine=visibleOrders();
+  b.innerHTML=mine.length?mine.map(o=>{
+    const current=getOrderStatusLabel(o.status),canCancel=canCancelOrder(o);
+    return `<div class="row order-row" onclick="openOrderDetail('${o.id}')"><div><b>Order #${o.id}</b><div class="sub">${o.date}</div><div class="sub">Delivery: ${o.deliveryDate||"—"} • ${o.payment||"COD"}</div><div class="order-status">● ${current}</div></div><div style="text-align:right"><b>${money(o.total)}</b><br><span class="sub">View details →</span>${canCancel?`<br><button class="cancel-order" onclick="event.stopPropagation();cancelOrder('${o.id}')">Cancel Order</button>`:""}</div></div>`;
+  }).join(""):'<div class="empty">No orders yet.</div>';
+}
+function openOrderDetail(id){
+  if(!logged){showNotice("Login Required","Please login to view your orders.","Login Now",()=>login(),"lock");return;}
+  const o=orders.find(x=>x.id===id);
+  if(!o||!orderBelongsToCurrentUser(o))return;
+  window.currentOpenOrderId=id;
+  renderOrderDetail(o);
+  page("orderDetail");
+  syncOrderStatuses();
+}
+function renderOrderDetail(o){
+ normalizeOrder(o);
+ const idx=o.status==="CANCELLED"?-1:getOrderStageIndex(o.status);
+ const visibleStages=o.status==="CANCELLED"?[]:ORDER_STAGES.slice(0,idx+1);
+ const progress=visibleStages.length<=1?0:100;
+ const currentLabel=getOrderStatusLabel(o.status);
+ const cancelAllowed=canCancelOrder(o);
+ const stageHtml=visibleStages.map((st,i)=>`<div class="track-step ${i<visibleStages.length-1?"done":"active"}"><div class="track-icon">${i<visibleStages.length-1?"✓":st.icon}</div><div class="track-label">${st.label}</div></div>`).join("");
+ const itemsHtml=(o.items||[]).map(x=>`<div class="detail-item"><span>${x.n} × ${x.qty}</span><strong>${money(x.p*x.qty)}</strong></div>`).join("");
+ const a=o.address||profileData||{};
+ document.getElementById("orderDetailCard").innerHTML=`<div class="order-detail-top"><div class="order-detail-title"><h2>Order #${o.id}</h2><div class="order-detail-meta">Placed on ${o.date} • ${o.payment||"COD"}</div></div><div class="detail-status-pill"><span class="detail-status-dot"></span>${currentLabel}</div></div><div class="tracking-caption">Order tracking status</div><div class="tracking-wrap"><div class="tracking-line"><div class="track-progress" style="width:${progress}%"></div>${stageHtml||'<div class="track-step active"><div class="track-icon">✓</div><div class="track-label">Placed</div></div>'}</div></div><div class="order-detail-grid"><div class="detail-box"><h3>Order Items</h3>${itemsHtml||'<div class="sub">No item details available.</div>'}<div class="detail-total"><span>Total Paid / Payable</span><strong>${money(o.total)}</strong></div></div><div class="detail-box"><h3>Delivery Details</h3><div class="detail-item"><span>Expected Delivery</span><strong>${o.deliveryDate||"—"}</strong></div><div class="detail-item"><span>Payment</span><strong>${o.payment||"COD"}</strong></div>${o.utr?`<div class="detail-item"><span>UTR</span><strong>${o.utr}</strong></div>`:""}<div class="detail-item" style="display:block"><span>Address</span><div class="detail-address">${a.name||""}${a.phone?`<br>${a.phone}`:""}${a.address?`<br>${a.address}`:""}${a.landmark?`<br>${a.landmark}`:""}${a.pincode?`<br>${a.pincode}`:""}</div></div></div></div><div class="detail-actions"><button class="secondary" onclick="page('orders')">← My Orders</button>${cancelAllowed?`<button class="cancel-order" style="margin-top:0;padding:11px 14px;font-size:12px" onclick="cancelOrder('${o.id}')">Cancel Order</button>`:`<span class="detail-cancel-disabled">${o.status==="CANCELLED"?"Order cancelled":"Cancellation unavailable after dispatch"}</span>`}</div>`;
+}
+function cancelOrder(id){const o=orders.find(x=>x.id===id);if(!o)return;if(o.status!=="CANCELLED"&&getOrderStageIndex(o.status)>=getOrderStageIndex("PICKED_UP"))return showNotice("Cancellation Not Available","This order cannot be cancelled after pickup.","OK",null,"warn");if(o.placedAt&&Date.now()-o.placedAt>24*60*60*1000)return showNotice("Cancellation Window Closed","Orders can only be cancelled within 24 hours of placement.","OK",null,"warn");showNotice("Cancel Order?","Your order will be cancelled. If payment was made online, the eligible refund amount will be refunded to the account used for payment.","Cancel Order",()=>{o.status="CANCELLED";o.cancelledAt=Date.now();o.updatedAt=Date.now();o.history=o.history||[];o.history.push({status:"CANCELLED",at:Date.now(),label:"Order Cancelled"});if(o.payment==="PREPAID")o.refundStatus="Refund to original payment account";db.ref("orders/"+id).update({status:"CANCELLED",cancelledAt:o.cancelledAt,updatedAt:o.updatedAt,history:o.history,refundStatus:o.refundStatus||null});renderOrders();renderOrderDetail(o);toast("Order cancelled");},"warn");}
+
+function placeOrder(){
+  startCheckout();
+}
+
+/* Initialize UI safely. */
+try{loadProductsFromServer();}catch(e){console.error("loadProductsFromServer failed:",e);}
+try{renderCart();}catch(e){console.error("renderCart failed:",e);}
+try{renderOrders();}catch(e){console.error("renderOrders failed:",e);}
+try{loadProfile();}catch(e){console.error("loadProfile failed:",e);}
+try{updateHeaderAccount();}catch(e){console.error("updateHeaderAccount failed:",e);}
+try{syncOrderStatuses();}catch(e){console.error("syncOrderStatuses failed:",e);}
+
+/* Expose every function referenced from inline onclick/oninput/onchange
+   attributes in the HTML above — needed because this script is now a
+   module, whose top-level functions are NOT global by default. */
+Object.assign(window,{
+  accountAction,add,buildUpiLink,buyNow,canCancelOrder,cancelOrder,
+  changeDetailQty,changeHomeQty,checkoutItems,checkoutSubtotal,closeLogin,
+  closeNotice,closePrepaidModal,completePayment,confirmPrepaidFromModal,
+  copyUpiId,editCheckoutAddress,getDetailQty,getHomeQty,getOrderStageIndex,
+  getOrderStatusLabel,goBackPage,handlePaymentAction,
+  loadCheckoutAddress,loadProductsFromServer,loadProfile,login,
+  loginWithPhone,logout,mapApiProduct,normalizeOrder,noticeConfirm,
+  openOrderDetail,openPayment,openPrepaidModal,openProduct,page,placeOrder,
+  productIcon,productMedia,qty,refreshOrdersFromStorage,
+  removeFromCart,renderCart,renderOrderDetail,renderOrders,renderPayment,
+  renderProducts,renderRealQr,renderRelatedProducts,renderSummary,
+  sanitizeDetailQty,sanitizeHomeQty,saveCheckoutAddress,saveProfile,
+  selectPayment,sendOtp,setCategory,showNotice,startCheckout,startQrTimer,
+  switchDetailPhoto,syncOrderStatuses,toast,updateHeaderAccount,updateQrCountdown,
+  verifyOtp
+});
+
+
+try{setupPincodeValidation();}catch(e){console.warn("Pincode validation setup failed",e);}
+</script>
+</body></html>
+<style>
+/* Requested compact professional mobile category + quantity UI */
+@media(max-width:760px){.nav{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;overflow:hidden!important;gap:4px!important;padding:7px 2%!important}.nav button{font-size:10px!important;padding:8px 1px!important;min-width:0!important;white-space:nowrap!important}.home-qty{height:24px!important}.home-qty button{width:20px!important;font-size:12px!important}.home-qty input{width:22px!important;font-size:10px!important}.product{min-height:330px!important}.detail-qty .qty-control button,.qty-control button{width:26px!important;height:26px!important}.qty-control input{width:32px!important;height:26px!important}.qty button{width:24px!important;height:24px!important}.cart-row-actions{gap:8px!important}}
+</style>
