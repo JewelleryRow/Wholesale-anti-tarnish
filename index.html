@@ -829,8 +829,31 @@ const money=n=>"₹"+Number(n).toLocaleString("en-IN");
 const save=()=>{
   localStorage.setItem("sw_cart",JSON.stringify(cart));
   renderCart();
+  syncCustomerToFirebase();
 };
 function toast(t){let x=document.getElementById("toast");x.textContent=t;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),1800)}
+
+/* Pushes the logged-in customer's profile + current cart to Firebase so
+   the Admin Panel can show "who is logged in, their full details, and
+   what's currently in their cart" live. Guests (not logged in) are never
+   synced — this only runs for a phone-verified account. */
+function syncCustomerToFirebase(){
+  if(!logged || !profileData.phone) return;
+  const phone=String(profileData.phone).trim();
+  if(!/^\d{10}$/.test(phone)) return;
+  db.ref("customers/"+phone).set({
+    phone,
+    name:profileData.name||"",
+    address:profileData.address||"",
+    landmark:profileData.landmark||"",
+    pincode:profileData.pincode||"",
+    district:profileData.district||"",
+    state:profileData.state||"",
+    cart:cart.map(x=>({id:x.id,n:x.n,p:x.p,qty:x.qty})),
+    cartTotal:cart.reduce((a,x)=>a+x.p*x.qty,0),
+    updatedAt:Date.now()
+  }).catch(err=>console.error("syncCustomerToFirebase failed:",err));
+}
 
 function productIcon(type){
  const common='viewBox="0 0 24 24" fill="none" stroke="#171717" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"';
@@ -1082,7 +1105,7 @@ function renderSummary(){
   document.getElementById("summaryProductAmount").textContent=money(subtotal);
   document.getElementById("summaryShipping").innerHTML = shipNow===0 && shippingCost>0 ? `<span style="color:#1a7a3c">FREE</span>` : money(shipNow);
   document.getElementById("summaryGrandTotal").textContent=money(subtotal+shipNow);
-  let d=new Date(); d.setDate(d.getDate()+6);
+  let d=new Date(); d.setDate(d.getDate()+5);
   document.getElementById("deliveryDate").textContent=d.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
 }
 function editCheckoutAddress(){
@@ -1162,7 +1185,7 @@ async function completePayment(utr){
     total=subtotal+shipping-discount,
     orderDate=new Date(),
     delivery=new Date(orderDate);
-  delivery.setDate(delivery.getDate()+6);
+  delivery.setDate(delivery.getDate()+5);
   const orderItems=JSON.parse(JSON.stringify(checkoutItems()));
   const orderId="JR-"+Date.now()+"-"+Math.random().toString(36).substring(2,8);
   const orderObj={id:orderId,customerPhone:profileData.phone||"",date:orderDate.toLocaleString("en-IN"),deliveryDate:delivery.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}),subtotal,shipping,discount,total,items:orderItems,payment:method,utr:utr||null,status:"PLACED",placedAt:orderDate.getTime(),updatedAt:orderDate.getTime(),address:JSON.parse(JSON.stringify(profileData)),history:[{status:"PLACED",at:orderDate.getTime(),label:"Order Placed"}]};
@@ -1316,7 +1339,7 @@ function loginWithPhone(){
     closeLogin();
     updateHeaderAccount();
     toast(existing?"Login successful":"Account created successfully");
-    
+    syncCustomerToFirebase();
   };
   document.getElementById("loginStatus").textContent=existing?"Logging you in...":"Creating your account...";
   setTimeout(finish,3500);
@@ -1332,6 +1355,7 @@ async function saveProfile(){
  ["name","phone","address","landmark","pincode"].forEach(k=>profileData[k]=document.getElementById(k).value.trim());
  if(info){profileData.state=info.state;profileData.district=info.district;profileData.postOffice=info.areas?.[0]||"";}
  localStorage.setItem("sw_profile",JSON.stringify(profileData));updateHeaderAccount();document.getElementById("profileMsg").textContent="Profile saved successfully.";
+ syncCustomerToFirebase();
 }
 const ORDER_STAGES=[{key:"PLACED",label:"Placed",icon:"✓"},{key:"CONFIRMED",label:"Confirmed",icon:"✓"},{key:"READY_TO_SHIP",label:"Ready to Ship",icon:"▣"},{key:"IN_TRANSIT",label:"In Transit",icon:"↗"},{key:"OUT_FOR_DELIVERY",label:"Out for Delivery",icon:"⌁"},{key:"DELIVERED",label:"Delivered",icon:"✓"},{key:"RTO",label:"RTO",icon:"↩"},{key:"REJECTED",label:"Rejected",icon:"×"}];
 
@@ -1415,7 +1439,7 @@ Object.assign(window,{
   copyUpiId,editCheckoutAddress,getDetailQty,getHomeQty,getOrderStageIndex,
   getOrderStatusLabel,goBackPage,handlePaymentAction,
   loadCheckoutAddress,loadProductsFromServer,loadProfile,login,
-  loginWithPhone,logout,mapApiProduct,normalizeOrder,noticeConfirm,
+  loginWithPhone,logout,normalizeOrder,noticeConfirm,
   openOrderDetail,openPayment,openPrepaidModal,openProduct,page,placeOrder,
   productIcon,productMedia,qty,refreshOrdersFromStorage,
   removeFromCart,renderCart,renderOrderDetail,renderOrders,renderPayment,
