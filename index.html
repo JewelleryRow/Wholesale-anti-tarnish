@@ -1018,31 +1018,48 @@ async function lookupPincode(pincode, mode="checkout"){
   const pin=String(pincode||"").replace(/\D/g,"").slice(0,6);
   input.value=pin;
   if(pin.length!==6){status.className="pincode-status";status.textContent=pin?"Enter a 6-digit pincode.":"";if(meta)meta.style.display="none";input.classList.remove("pincode-valid","pincode-invalid");return null;}
-  status.className="pincode-status loading";status.textContent="Checking pincode…";
-  if(meta)meta.style.display="none";input.classList.remove("pincode-valid","pincode-invalid");
-  try{
-    const res=await fetch("https://api.postalpincode.in/pincode/"+pin,{cache:"no-store"});
-    const data=await res.json();
-    const row=data?.[0];
-    if(!row||row.Status!=="Success"||!Array.isArray(row.PostOffice)||!row.PostOffice.length)throw new Error("Invalid pincode");
-    const offices=row.PostOffice;
-    const first=offices[0];
-    const districts=[...new Set(offices.map(x=>x.District).filter(Boolean))];
-    const states=[...new Set(offices.map(x=>x.State).filter(Boolean))];
-    const areas=[...new Set(offices.map(x=>x.Name).filter(Boolean))];
-    const info={pincode:pin,state:states[0]||"",district:districts[0]||"",areas,offices};
-    status.className="pincode-status ok";status.textContent="✓ Valid pincode";
-    input.classList.add("pincode-valid");
-    if(meta){meta.style.display="block";meta.innerHTML=`<strong>Location found:</strong> ${info.district||"—"}, ${info.state||"—"}<br><span>Post Office: ${areas.slice(0,3).join(", ")}${areas.length>3?"…":""}</span>`;}
-    if(mode==="checkout"){checkoutPincodeInfo=info;}
-    return info;
-  }catch(e){
+
+  // Indian pincodes never start with 0 — this local check alone is a reliable
+  // pass/fail so the field never gets stuck "invalid" just because a third-party
+  // API is slow, down, or blocked by CORS.
+  if(!/^[1-9][0-9]{5}$/.test(pin)){
     status.className="pincode-status err";status.textContent="✕ Invalid pincode. Please check the 6-digit PIN.";
     input.classList.add("pincode-invalid");
     if(meta)meta.style.display="none";
     if(mode==="checkout")checkoutPincodeInfo=null;
     return null;
   }
+
+  // Format is valid — mark it valid right away and let checkout/save proceed.
+  status.className="pincode-status ok";status.textContent="✓ Valid pincode";
+  input.classList.add("pincode-valid");
+  let info={pincode:pin,state:"",district:"",areas:[],offices:[]};
+  if(mode==="checkout")checkoutPincodeInfo=info;
+
+  // Area/district/state lookup is a bonus enhancement only — if it fails
+  // (network error, CORS, API downtime, timeout) we quietly skip it instead
+  // of flipping the field to "invalid".
+  if(meta){meta.style.display="block";meta.innerHTML=`<span>Looking up area details…</span>`;}
+  try{
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),6000);
+    const res=await fetch("https://api.postalpincode.in/pincode/"+pin,{cache:"no-store",signal:controller.signal});
+    clearTimeout(timer);
+    const data=await res.json();
+    const row=data?.[0];
+    if(!row||row.Status!=="Success"||!Array.isArray(row.PostOffice)||!row.PostOffice.length)throw new Error("No area data");
+    const offices=row.PostOffice;
+    const districts=[...new Set(offices.map(x=>x.District).filter(Boolean))];
+    const states=[...new Set(offices.map(x=>x.State).filter(Boolean))];
+    const areas=[...new Set(offices.map(x=>x.Name).filter(Boolean))];
+    info={pincode:pin,state:states[0]||"",district:districts[0]||"",areas,offices};
+    if(meta){meta.innerHTML=`<strong>Location found:</strong> ${info.district||"—"}, ${info.state||"—"}<br><span>Post Office: ${areas.slice(0,3).join(", ")}${areas.length>3?"…":""}</span>`;}
+    if(mode==="checkout")checkoutPincodeInfo=info;
+  }catch(e){
+    // Area lookup failed — pincode itself stays valid, we just hide the meta box.
+    if(meta)meta.style.display="none";
+  }
+  return info;
 }
 function setupPincodeValidation(){
   const co=document.getElementById("coPincode");
