@@ -1008,71 +1008,17 @@ function checkoutItems(){
 function checkoutSubtotal(){
   return checkoutItems().reduce((a,x)=>a+x.p*x.qty,0);
 }
-let checkoutPincodeInfo=null;
-let pincodeLookupTimer=null;
-async function lookupPincode(pincode, mode="checkout"){
-  const input=document.getElementById(mode==="profile"?"pincode":"coPincode");
-  const status=document.getElementById(mode==="profile"?"pincodeStatus":"coPincodeStatus");
-  const meta=document.getElementById(mode==="profile"?"pincodeMeta":"coPincodeMeta");
-  if(!input||!status)return null;
-  const pin=String(pincode||"").replace(/\D/g,"").slice(0,6);
-  input.value=pin;
-  if(pin.length!==6){status.className="pincode-status";status.textContent=pin?"Enter a 6-digit pincode.":"";if(meta)meta.style.display="none";input.classList.remove("pincode-valid","pincode-invalid");return null;}
-
-  // Indian pincodes never start with 0 — this local check alone is a reliable
-  // pass/fail so the field never gets stuck "invalid" just because a third-party
-  // API is slow, down, or blocked by CORS.
-  if(!/^[1-9][0-9]{5}$/.test(pin)){
-    status.className="pincode-status err";status.textContent="✕ Invalid pincode. Please check the 6-digit PIN.";
-    input.classList.add("pincode-invalid");
-    if(meta)meta.style.display="none";
-    if(mode==="checkout")checkoutPincodeInfo=null;
-    return null;
-  }
-
-  // Format is valid — mark it valid right away and let checkout/save proceed.
-  status.className="pincode-status ok";status.textContent="✓ Valid pincode";
-  input.classList.add("pincode-valid");
-  let info={pincode:pin,state:"",district:"",areas:[],offices:[]};
-  if(mode==="checkout")checkoutPincodeInfo=info;
-
-  // Area/district/state lookup is a bonus enhancement only — if it fails
-  // (network error, CORS, API downtime, timeout) we quietly skip it instead
-  // of flipping the field to "invalid".
-  if(meta){meta.style.display="block";meta.innerHTML=`<span>Looking up area details…</span>`;}
-  try{
-    const controller=new AbortController();
-    const timer=setTimeout(()=>controller.abort(),6000);
-    const res=await fetch("https://api.postalpincode.in/pincode/"+pin,{cache:"no-store",signal:controller.signal});
-    clearTimeout(timer);
-    const data=await res.json();
-    const row=data?.[0];
-    if(!row||row.Status!=="Success"||!Array.isArray(row.PostOffice)||!row.PostOffice.length)throw new Error("No area data");
-    const offices=row.PostOffice;
-    const districts=[...new Set(offices.map(x=>x.District).filter(Boolean))];
-    const states=[...new Set(offices.map(x=>x.State).filter(Boolean))];
-    const areas=[...new Set(offices.map(x=>x.Name).filter(Boolean))];
-    info={pincode:pin,state:states[0]||"",district:districts[0]||"",areas,offices};
-    if(meta){meta.innerHTML=`<strong>Location found:</strong> ${info.district||"—"}, ${info.state||"—"}<br><span>Post Office: ${areas.slice(0,3).join(", ")}${areas.length>3?"…":""}</span>`;}
-    if(mode==="checkout")checkoutPincodeInfo=info;
-  }catch(e){
-    // Area lookup failed — pincode itself stays valid, we just hide the meta box.
-    if(meta)meta.style.display="none";
-  }
-  return info;
-}
 function setupPincodeValidation(){
   const co=document.getElementById("coPincode");
-  if(co){co.addEventListener("input",()=>{clearTimeout(pincodeLookupTimer);checkoutPincodeInfo=null;const v=co.value.replace(/\D/g,"").slice(0,6);co.value=v;if(v.length===6)pincodeLookupTimer=setTimeout(()=>lookupPincode(v,"checkout"),180);else{document.getElementById("coPincodeStatus").textContent=v?"Enter a 6-digit pincode.":"";document.getElementById("coPincodeStatus").className="pincode-status";document.getElementById("coPincodeMeta").style.display="none";co.classList.remove("pincode-valid","pincode-invalid");}});}
+  if(co){co.addEventListener("input",()=>{co.value=co.value.replace(/\D/g,"").slice(0,6);});}
   const pr=document.getElementById("pincode");
-  if(pr){pr.addEventListener("input",()=>{clearTimeout(pincodeLookupTimer);const v=pr.value.replace(/\D/g,"").slice(0,6);pr.value=v;if(v.length===6)pincodeLookupTimer=setTimeout(()=>lookupPincode(v,"profile"),180);});}
+  if(pr){pr.addEventListener("input",()=>{pr.value=pr.value.replace(/\D/g,"").slice(0,6);});}
 }
 function saveCheckoutAddress(){
   let fields=["coName","coPhone","coAddress","coLandmark","coPincode"];
   let vals=fields.map(id=>document.getElementById(id).value.trim());
   if(!vals[0]||!/^[0-9]{10}$/.test(vals[1])||!vals[2]||!/^[0-9]{6}$/.test(vals[4])){showNotice("Check Your Details","Please enter a valid name, 10 digit mobile number, address and 6 digit pincode.","OK",null,"warn");return;}
-  if(!checkoutPincodeInfo||checkoutPincodeInfo.pincode!==vals[4]){showNotice("Invalid Pincode","Please enter a valid 6-digit Indian pincode and wait for the location to be verified.","OK",null,"warn");return;}
-  profileData={name:vals[0],phone:vals[1],address:vals[2],landmark:vals[3],pincode:vals[4],state:checkoutPincodeInfo.state,district:checkoutPincodeInfo.district,postOffice:checkoutPincodeInfo.areas?.[0]||""};
+  profileData={name:vals[0],phone:vals[1],address:vals[2],landmark:vals[3],pincode:vals[4]};
   localStorage.setItem("sw_profile",JSON.stringify(profileData));
   renderSummary();page("checkoutSummary");
 }
@@ -1082,8 +1028,6 @@ function loadCheckoutAddress(){
   document.getElementById("coAddress").value=profileData.address||"";
   document.getElementById("coLandmark").value=profileData.landmark||"";
   document.getElementById("coPincode").value=profileData.pincode||"";
-  checkoutPincodeInfo=null;
-  if(/^\d{6}$/.test(profileData.pincode||"")) setTimeout(()=>lookupPincode(profileData.pincode,"checkout"),50);
 }
 function minOrderShortfall(subtotal){
   if(!minOrderEnabled) return 0;
@@ -1367,10 +1311,7 @@ function loadProfile(){["name","phone","address","landmark","pincode"].forEach(k
 async function saveProfile(){
  const pin=document.getElementById("pincode").value.trim();
  if(pin&&!/^\d{6}$/.test(pin)){document.getElementById("profileMsg").textContent="Please enter a valid 6-digit pincode.";return;}
- let info=null;if(pin)info=await lookupPincode(pin,"profile");
- if(pin&&!info){document.getElementById("profileMsg").textContent="Invalid pincode. Please correct it before saving.";return;}
  ["name","phone","address","landmark","pincode"].forEach(k=>profileData[k]=document.getElementById(k).value.trim());
- if(info){profileData.state=info.state;profileData.district=info.district;profileData.postOffice=info.areas?.[0]||"";}
  localStorage.setItem("sw_profile",JSON.stringify(profileData));updateHeaderAccount();document.getElementById("profileMsg").textContent="Profile saved successfully.";
  syncCustomerToFirebase();
 }
