@@ -4,6 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Jewellery Row</title>
+<!-- Perf: open the connection to Firebase + the CDN in advance (DNS+TLS
+     handshake happens while the HTML/CSS is still parsing) so once the
+     scripts below actually start talking to these hosts, they don't pay
+     the connection-setup delay — shaves a real chunk off slow networks. -->
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://jewellery-a32ee-default-rtdb.firebaseio.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="dns-prefetch" href="https://www.gstatic.com">
+<link rel="dns-prefetch" href="https://jewellery-a32ee-default-rtdb.firebaseio.com">
+<link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 <style>
 :root{
   --yellow:#d4af37;
@@ -103,6 +113,12 @@ body{min-height:100vh}
 }
 .product h3{font-size:16px;margin:0 0 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .sub{font-size:13px;color:var(--muted)}
+.rating{display:flex;align-items:center;gap:6px;margin:5px 0 2px;line-height:1}
+.rating .stars{position:relative;display:inline-block;font-size:15px;letter-spacing:1px}
+.rating .stars-bg{color:#e2e4e8}
+.rating .stars-fg{position:absolute;top:0;left:0;overflow:hidden;white-space:nowrap;color:#f0b429}
+.rating .rating-value{font-size:12.5px;font-weight:800;color:var(--ink)}
+.rating .rating-count{font-size:12px;color:var(--muted)}
 .price{font-size:22px;font-weight:950;color:var(--green);margin:9px 0 13px}
 .add{
   margin-top:auto;background:var(--green);color:#fff;border:0;border-radius:9px;
@@ -113,6 +129,25 @@ body{min-height:100vh}
 .skeleton-block{background:linear-gradient(90deg,#eef0f2 25%,#f7f8f9 37%,#eef0f2 63%);background-size:400% 100%;animation:skeleton-shimmer 1.3s ease infinite}
 .skeleton-line{height:12px;border-radius:6px;margin-top:8px;background:linear-gradient(90deg,#eef0f2 25%,#f7f8f9 37%,#eef0f2 63%);background-size:400% 100%;animation:skeleton-shimmer 1.3s ease infinite}
 @keyframes skeleton-shimmer{0%{background-position:100% 0}100%{background-position:0 0}}
+
+/* YouTube-style thin top progress bar shown while data is being fetched.
+   Purely informational (no alarming text/buttons) — just tells the user
+   "we're working on it" the same way a big platform's buffering bar does. */
+.top-load-bar{position:fixed;top:0;left:0;width:100%;height:3px;z-index:999;overflow:hidden;opacity:0;pointer-events:none;transition:opacity .25s ease}
+.top-load-bar.show{opacity:1}
+.top-load-bar::after{content:"";position:absolute;top:0;left:-35%;width:35%;height:100%;
+  background:linear-gradient(90deg,transparent,var(--yellow) 45%,#fff3c4 50%,var(--yellow) 55%,transparent);
+  animation:top-load-slide 1.15s ease-in-out infinite}
+@keyframes top-load-slide{0%{left:-35%}100%{left:100%}}
+
+/* Calm "still fetching" line shown under the skeleton cards instead of a
+   scary error card — mirrors how big apps quietly keep retrying without
+   telling the user something went wrong. */
+.load-hint{display:flex;align-items:center;justify-content:center;gap:8px;color:var(--muted);font-size:12.5px}
+.load-hint .dot{width:6px;height:6px;border-radius:50%;background:var(--yellow);animation:load-hint-pulse 1.1s ease-in-out infinite}
+.load-hint .dot:nth-child(2){animation-delay:.18s}
+.load-hint .dot:nth-child(3){animation-delay:.36s}
+@keyframes load-hint-pulse{0%,80%,100%{opacity:.25;transform:scale(.7)}40%{opacity:1;transform:scale(1)}}
 
 .profile{padding:24px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
@@ -174,6 +209,7 @@ body{min-height:100vh}
 }
 .primary{width:100%;padding:12px;background:var(--green);color:#fff;border-radius:9px;font-weight:900;border:0}
 .status{font-size:13px;color:var(--muted);margin-top:9px}
+.status.err{color:#b91c1c}
 .toast{
   position:fixed;right:18px;bottom:18px;background:#171717;color:#fff;
   padding:13px 17px;border-radius:10px;z-index:150;display:none;box-shadow:0 8px 24px rgba(0,0,0,.2)
@@ -362,6 +398,10 @@ body{min-height:100vh}
  .gallery-thumbs{width:min(85vw,320px)}
 }
 .detail-info h2{margin:0 0 6px;font-size:26px}
+.detail-info .rating{margin:2px 0 8px}
+.detail-info .rating .stars{font-size:17px}
+.detail-info .rating .rating-value{font-size:14px}
+.detail-info .rating .rating-count{font-size:13px}
 .detail-info .price{font-size:28px;margin:12px 0}
 .detail-actions{display:flex;gap:12px;margin-top:18px;max-width:420px}
 .detail-actions .add,.detail-actions .buy-now{height:46px;font-size:14px;flex:1}
@@ -456,6 +496,7 @@ body{min-height:100vh}
 </style>
 </head>
 <body>
+<div class="top-load-bar show" id="topLoadBar"></div>
 <header class="header" id="siteHeader">
   <div class="header-top">
     <div class="brand">
@@ -663,7 +704,21 @@ body{min-height:100vh}
  </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<div id="cancelOrderModal" class="modal-bg" onclick="if(event.target===this)closeCancelOrderModal()">
+ <div class="modal">
+  <button class="close" onclick="closeCancelOrderModal()">×</button>
+  <h2>Cancel Order</h2>
+  <div class="sub">Enter the UPI ID your refund should be sent to.</div>
+  <input id="cancelUpiId" placeholder="yourname@upi" autocomplete="off">
+  <div id="cancelUpiStatus" class="status"></div>
+  <button class="primary" onclick="confirmCancelOrderWithUpi()">Confirm Cancellation</button>
+ </div>
+</div>
+
+<!-- Perf: QR code is only needed later at checkout, not for showing
+     products — deferring it so it never delays Firebase/inventory from
+     starting first. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-database-compat.js"></script>
 <script>
@@ -755,63 +810,164 @@ function loadProductsFromServer(){ renderProducts(); }
 function mapInventoryVal(val){
   return Object.keys(val).map(k=>{
     const p=val[k];
-    return {id:p.id||k,n:p.title,p:Number(p.price)||0,s:p.subtitle||"Premium quality jewellery item",c:p.category||"all",photos:(p.photos&&p.photos.length)?p.photos:(p.photo?[p.photo]:[]),icon:"box"};
+    // Home/listing sirf EK chhoti thumb dikhata hai (fast!) — poori
+    // gallery sirf jab product detail khulta hai tab "inventoryPhotos"
+    // se alag se load hoti hai (dekho openProduct neeche).
+    const listPhoto=p.thumb||(p.photos&&p.photos[0])||p.photo||null;
+    return {id:p.id||k,n:p.title,p:Number(p.price)||0,s:p.subtitle||"Premium quality jewellery item",c:p.category||"all",photos:listPhoto?[listPhoto]:[],icon:"box",rating:Number(p.rating)||0,ratingCount:Number(p.ratingCount)||0};
   });
 }
 function onInventoryUpdate(){
+  hideTopBar();
   renderProducts();
   if(window.currentOpenProductId && document.getElementById("productDetail")?.classList.contains("active")){
     if(PRODUCTS.some(p=>p.id===window.currentOpenProductId))openProduct(window.currentOpenProductId);
   }
 }
+function showTopBar(){document.getElementById("topLoadBar")?.classList.add("show");}
+function hideTopBar(){document.getElementById("topLoadBar")?.classList.remove("show");}
 
 /* Live inventory from the Admin Panel via Firebase. As soon as admin
    adds/deletes a product, it appears/disappears here automatically.
    No dummy/demo products — if admin hasn't added anything yet, the
    storefront simply shows an empty state.
 
-   PERFORMANCE: pulling the whole "inventory" node in one shot means the
-   browser has to fully download every product's photo data before
-   ANYTHING can be shown — on a big catalog with several photos per
-   product this is what makes the storefront look frozen for a long
-   time. To fix the *first paint* speed without touching the Admin
-   Panel/DB structure, we grab a very small first batch immediately
-   (fast, renders right away), then load the complete inventory in the
-   background and swap it in once ready — so the user sees products
-   almost instantly instead of staring at a blank/loading screen.
+   PERFORMANCE — FETCH BIGGER CHUNKS, REVEAL 4 AT A TIME: each network
+   request has real "round-trip" overhead of its own (this matters a lot
+   on slow/mobile networks) — asking for only 4 products per Firebase
+   request meant that overhead was paid over and over, once per page,
+   which is why loading still felt slow even though each individual page
+   was small. Now each actual network request fetches a bigger chunk
+   (16 products) — far fewer round trips, so the real network time drops
+   a lot — but those 16 are still revealed to the screen 4 at a time with
+   a tiny pause in between (purely on-screen, no extra network calls), so
+   it still looks and feels like a smooth, gradual "4 at a time" reveal.
+
+   Once every chunk is in, one single lightweight "live" listener is
+   attached quietly in the background so future admin add/edit/delete
+   still reflects instantly, without ever re-downloading the whole
+   catalog again.
 
    DIAGNOSTIC: this also times + measures the size of what actually came
-   down the wire and prints it to the browser console, so it's possible
-   to see in one glance whether the delay is network/DB latency or the
-   product photos themselves being very large (e.g. base64 images saved
-   directly in the database instead of as compressed Storage URLs) —
-   open DevTools > Console (F12) to see "[Inventory timing]" lines. */
+   down the wire and prints it to the browser console for each chunk, so
+   it's possible to see in one glance whether the delay is network/DB
+   latency or the product photos themselves being very large (e.g. base64
+   images saved directly in the database instead of as compressed Storage
+   URLs) — open DevTools > Console (F12) to see "[Inventory timing]" lines. */
 const _invLoadStart=performance.now();
 let fullInventoryLoaded=false;
-const quickInventoryRef=db.ref("inventory").orderByKey().limitToFirst(4);
-quickInventoryRef.on("value",snap=>{
+const _INV_FETCH_CHUNK=16; // actual Firebase request size — fewer round trips
+const _INV_REVEAL_STEP=4;  // how many products appear on screen at once
+let _invLastKey=null;
+function _loadInventoryPage(){
   if(fullInventoryLoaded)return;
-  const val=snap.val()||{};
-  const approxKB=Math.round(JSON.stringify(val).length/1024);
-  console.log(`[Inventory timing] first ${Object.keys(val).length} product(s): ${(performance.now()-_invLoadStart).toFixed(0)}ms, ~${approxKB}KB`);
-  PRODUCTS=mapInventoryVal(val);
+  let q=db.ref("inventory").orderByKey().limitToFirst(_INV_FETCH_CHUNK);
+  if(_invLastKey)q=db.ref("inventory").orderByKey().startAfter(_invLastKey).limitToFirst(_INV_FETCH_CHUNK);
+  q.once("value").then(snap=>{
+    const val=snap.val()||{};
+    const keys=Object.keys(val);
+    const approxKB=Math.round(JSON.stringify(val).length/1024);
+    console.log(`[Inventory timing] fetched chunk after "${_invLastKey||"start"}": ${keys.length} product(s) @ ${(performance.now()-_invLoadStart).toFixed(0)}ms, ~${approxKB}KB`);
+    const chunkWasFull=keys.length===_INV_FETCH_CHUNK;
+    if(keys.length){
+      _invLastKey=keys[keys.length-1];
+      const existingIds=new Set(PRODUCTS.map(p=>p.id));
+      const newOnes=mapInventoryVal(val).filter(p=>!existingIds.has(p.id));
+      _revealInSteps(newOnes,chunkWasFull);
+    }else{
+      fullInventoryLoaded=true;
+      _startLiveInventorySync();
+      renderProducts();
+    }
+  }).catch(err=>{
+    console.error("Inventory page load failed:",err);
+  });
+}
+function _revealInSteps(remaining,moreChunkExpected){
+  if(!remaining.length){
+    if(moreChunkExpected){
+      // This chunk is fully revealed — go fetch the next chunk.
+      setTimeout(_loadInventoryPage,80);
+    }else{
+      // Got back fewer than a full chunk — that's every product there is.
+      fullInventoryLoaded=true;
+      _startLiveInventorySync();
+      renderProducts(); // drop the "loading more" hint below the grid
+    }
+    return;
+  }
+  const slice=remaining.splice(0,_INV_REVEAL_STEP);
+  PRODUCTS.push(...slice);
   productsLoaded=true;
   onInventoryUpdate();
-});
-db.ref("inventory").on("value",snap=>{
-  fullInventoryLoaded=true;
-  quickInventoryRef.off();
-  const val=snap.val()||{};
-  const approxKB=Math.round(JSON.stringify(val).length/1024);
-  console.log(`[Inventory timing] FULL ${Object.keys(val).length} product(s): ${(performance.now()-_invLoadStart).toFixed(0)}ms, ~${approxKB}KB`);
-  PRODUCTS=mapInventoryVal(val);
-  productsLoaded=true;
-  onInventoryUpdate();
-});
+  setTimeout(()=>_revealInSteps(remaining,moreChunkExpected),150);
+}
+_loadInventoryPage();
+
+// After every product is in, attach ONE ongoing listener so admin
+// changes (add/edit/delete) still show up live, without ever again
+// re-downloading the whole catalog in one go.
+let _liveSyncStarted=false;
+function _startLiveInventorySync(){
+  if(_liveSyncStarted)return;
+  _liveSyncStarted=true;
+  db.ref("inventory").on("value",snap=>{
+    const val=snap.val()||{};
+    PRODUCTS=mapInventoryVal(val);
+    productsLoaded=true;
+    onInventoryUpdate();
+  });
+}
+
+/* Agar load thoda time le raha hai to customer ko error/"Retry Now" jaisa
+   scary box dikhaane ke bajaye — bilkul YouTube/big-app style — bas shimmer
+   placeholders aur ek chhota subtle "still fetching" hint dikhate rehte hain
+   jab tak data (ya network wapas) na aa jaaye. App kabhi "broken" jaisa nahi
+   lagta, sirf "working on it" jaisa lagta hai. */
+let slowLoadNoticeShown=false;
+setTimeout(()=>{
+  if(!productsLoaded){
+    slowLoadNoticeShown=true;
+    renderProducts();
+  }
+},4000);
+function retryLoadInventory(){
+  showTopBar();
+  renderProducts();
+  // Restart the same small-page loader (not a big one-shot fetch) so a
+  // retry is just as fast/light as the normal first load.
+  _invLastKey=null;
+  _loadInventoryPage();
+}
+window.addEventListener("online",()=>{ if(!productsLoaded) retryLoadInventory(); });
+// Quietly keep retrying in the background every few seconds while offline/
+// slow, instead of leaving the user staring at a dead end — same as how
+// YouTube keeps buffering without asking the viewer to do anything.
+const _bgRetryTimer=setInterval(()=>{
+  if(productsLoaded){clearInterval(_bgRetryTimer);return;}
+  retryLoadInventory();
+},7000);
 
 function productMedia(x){
   if(x.photos&&x.photos.length)return `<img class="product-photo" src="${x.photos[0]}" alt="${x.n}" loading="lazy">`;
   return productIcon(x.icon||"box");
+}
+
+/* Star rating — admin enters "rating" (0-5) and "ratingCount" (kitne
+   logo ne rate kiya) per product in the Admin Panel. A product with no
+   rating set yet (0 or missing) simply shows no rating row, so the
+   storefront never displays a fake "0 stars". The fill is a gold
+   overlay clipped to a percentage width over a gray star row underneath
+   — this gives clean half/partial stars (e.g. 4.3) with plain CSS. */
+function ratingHtml(x){
+  const rating=Number(x.rating)||0, count=Number(x.ratingCount)||0;
+  if(rating<=0||count<=0)return "";
+  const pct=Math.max(0,Math.min(100,(rating/5)*100));
+  return `<div class="rating" title="${rating.toFixed(1)} out of 5, based on ${count} rating${count===1?"":"s"}">
+    <span class="stars"><span class="stars-bg">★★★★★</span><span class="stars-fg" style="width:${pct}%">★★★★★</span></span>
+    <span class="rating-value">${rating.toFixed(1)}</span>
+    <span class="rating-count">(${count})</span>
+  </div>`;
 }
 
 // One-time cleanup: earlier testing (during earlier UI testing) left
@@ -883,10 +1039,11 @@ function renderProducts(){
    return matchesSearch && matchesCategory;
  });
  if(a.length){
-   document.getElementById("products").innerHTML=a.map(x=>`<article class="card product">
+   const cardsHtml=a.map(x=>`<article class="card product">
   <div class="pic" onclick="openProduct('${x.id}')">${productMedia(x)}</div>
   <h3 onclick="openProduct('${x.id}')" title="${x.n}">${x.n}</h3>
   <div class="sub">${x.s}</div>
+  ${ratingHtml(x)}
   <div class="price" id="homePrice-${x.id}" data-unit-price="${x.p}">${money(x.p)}</div>
   <div class="product-actions">
     <div class="home-qty" aria-label="Quantity for ${x.n}">
@@ -897,10 +1054,31 @@ function renderProducts(){
     <button class="add" onclick="add('${x.id}',getHomeQty('${x.id}'))">ADD TO CART</button>
   </div>
 </article>`).join("");
+   // Some products are already on screen, but more are still on the way
+   // from the server — show a couple of shimmer cards + a clear "loading
+   // more" line right under the real ones, so the user knows the catalog
+   // isn't finished yet and more is genuinely coming, not stuck.
+   const moreComingHtml=(!fullInventoryLoaded)?
+     SKELETON_CARD.repeat(2)+
+     `<div class="load-hint" style="grid-column:1/-1;padding:10px 4px 2px">
+       <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+       <span>Loading more products…</span>
+     </div>`:"";
+   document.getElementById("products").innerHTML=cardsHtml+moreComingHtml;
  }else if(!productsLoaded){
    // Data hasn't arrived from the server yet — show shimmer placeholders,
-   // NOT "no products", so the user knows the app is still working.
-   document.getElementById("products").innerHTML=SKELETON_CARD.repeat(4);
+   // NOT "no products" and NOT a scary error box, so the user simply feels
+   // the app is still working (same idea as YouTube's buffering state).
+   showTopBar();
+   if(slowLoadNoticeShown){
+     document.getElementById("products").innerHTML=SKELETON_CARD.repeat(4)+
+       `<div class="load-hint" style="grid-column:1/-1;padding:14px 4px 2px">
+         <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+         <span>${navigator.onLine?"Still fetching the latest products…":"Waiting for your connection to come back…"}</span>
+       </div>`;
+   }else{
+     document.getElementById("products").innerHTML=SKELETON_CARD.repeat(4);
+   }
  }else{
    document.getElementById("products").innerHTML=`<div class="card empty">${PRODUCTS.length?"No products found in this category.":"No products available yet. Please check back soon."}</div>`;
  }
@@ -948,6 +1126,22 @@ function openProduct(id){
  let x=PRODUCTS.find(p=>p.id===id);
  if(!x)return;
  window.currentOpenProductId=id;
+ renderProductDetail(x);
+ page("productDetail",null,"productDetail:"+x.id);
+ // Home listing sirf ek chhoti thumb rakhti hai (fast load ke liye) —
+ // poori photo gallery yahan alag se, sirf jab product khola jaaye tab
+ // "inventoryPhotos" se laate hain, aur ready hote hi swap kar dete hain.
+ db.ref("inventoryPhotos/"+id).once("value").then(snap=>{
+   if(window.currentOpenProductId!==id)return; // user aage badh chuka
+   const val=snap.val();
+   const full=(val&&val.photos&&val.photos.length)?val.photos:null;
+   if(full){
+     x.photos=full;
+     renderProductDetail(x);
+   }
+ }).catch(err=>console.error("Failed to load product gallery:",err));
+}
+function renderProductDetail(x){
  const gallery=(x.photos&&x.photos.length>1) ? `
    <div class="detail-gallery-col">
      <div class="pic detail-pic" id="detailMainPic">${productMedia(x)}</div>
@@ -959,6 +1153,7 @@ function openProduct(id){
    <div class="detail-info">
     <h2>${x.n}</h2>
     <div class="sub">${x.s}</div>
+    ${ratingHtml(x)}
     <div class="price" id="detailPrice" data-unit-price="${x.p}">${money(x.p)}</div>
     <div class="detail-qty">
       <label for="detailQty">Quantity</label>
@@ -975,7 +1170,6 @@ function openProduct(id){
    </div>
   </div>`;
  renderRelatedProducts(x.id);
- page("productDetail",null,"productDetail:"+x.id);
 }
 function switchDetailPhoto(id,i,thumbEl){
  const x=PRODUCTS.find(p=>p.id===id);
@@ -993,6 +1187,7 @@ function renderRelatedProducts(excludeId){
   <div class="pic" onclick="openProduct('${x.id}')">${productMedia(x)}</div>
   <h3 onclick="openProduct('${x.id}')" title="${x.n}">${x.n}</h3>
   <div class="sub">${x.s}</div>
+  ${ratingHtml(x)}
   <div class="price">${money(x.p)}</div>
   <div class="product-actions">
     <button class="add" onclick="add('${x.id}')">ADD TO CART</button>
@@ -1371,9 +1566,66 @@ function renderOrderDetail(o){
  const stageHtml=visibleStages.map((st,i)=>`<div class="track-step ${i<visibleStages.length-1?"done":"active"}"><div class="track-icon">${i<visibleStages.length-1?"✓":st.icon}</div><div class="track-label">${st.label}</div></div>`).join("");
  const itemsHtml=(o.items||[]).map(x=>`<div class="detail-item"><span>${x.n} × ${x.qty}</span><strong>${money(x.p*x.qty)}</strong></div>`).join("");
  const a=o.address||profileData||{};
- document.getElementById("orderDetailCard").innerHTML=`<div class="order-detail-top"><div class="order-detail-title"><h2>Order #${o.id}</h2><div class="order-detail-meta">Placed on ${o.date} • ${o.payment||"COD"}</div></div><div class="detail-status-pill"><span class="detail-status-dot"></span>${currentLabel}</div></div><div class="tracking-caption">Order tracking status</div><div class="tracking-wrap"><div class="tracking-line"><div class="track-progress" style="width:${progress}%"></div>${stageHtml||'<div class="track-step active"><div class="track-icon">✓</div><div class="track-label">Placed</div></div>'}</div></div><div class="order-detail-grid"><div class="detail-box"><h3>Order Items</h3>${itemsHtml||'<div class="sub">No item details available.</div>'}<div class="detail-total"><span>Total Paid / Payable</span><strong>${money(o.total)}</strong></div></div><div class="detail-box"><h3>Delivery Details</h3><div class="detail-item"><span>Expected Delivery</span><strong>${o.deliveryDate||"—"}</strong></div><div class="detail-item"><span>Payment</span><strong>${o.payment||"COD"}</strong></div>${o.utr?`<div class="detail-item"><span>UTR</span><strong>${o.utr}</strong></div>`:""}<div class="detail-item" style="display:block"><span>Address</span><div class="detail-address">${a.name||""}${a.phone?`<br>${a.phone}`:""}${a.address?`<br>${a.address}`:""}${a.landmark?`<br>${a.landmark}`:""}${a.pincode?`<br>${a.pincode}`:""}</div></div></div></div><div class="detail-actions"><button class="secondary" onclick="page('orders')">← My Orders</button>${cancelAllowed?`<button class="cancel-order" style="margin-top:0;padding:11px 14px;font-size:12px" onclick="cancelOrder('${o.id}')">Cancel Order</button>`:`<span class="detail-cancel-disabled">${o.status==="CANCELLED"?"Order cancelled":"Cancellation unavailable once Ready to Ship"}</span>`}</div>`;
+ document.getElementById("orderDetailCard").innerHTML=`<div class="order-detail-top"><div class="order-detail-title"><h2>Order #${o.id}</h2><div class="order-detail-meta">Placed on ${o.date} • ${o.payment||"COD"}</div></div><div class="detail-status-pill"><span class="detail-status-dot"></span>${currentLabel}</div></div><div class="tracking-caption">Order tracking status</div><div class="tracking-wrap"><div class="tracking-line"><div class="track-progress" style="width:${progress}%"></div>${stageHtml||'<div class="track-step active"><div class="track-icon">✓</div><div class="track-label">Placed</div></div>'}</div></div><div class="order-detail-grid"><div class="detail-box"><h3>Order Items</h3>${itemsHtml||'<div class="sub">No item details available.</div>'}<div class="detail-total"><span>Total Paid / Payable</span><strong>${money(o.total)}</strong></div></div><div class="detail-box"><h3>Delivery Details</h3><div class="detail-item"><span>Expected Delivery</span><strong>${o.deliveryDate||"—"}</strong></div><div class="detail-item"><span>Payment</span><strong>${o.payment||"COD"}</strong></div>${o.utr?`<div class="detail-item"><span>UTR</span><strong>${o.utr}</strong></div>`:""}<div class="detail-item" style="display:block"><span>Address</span><div class="detail-address">${a.name||""}${a.phone?`<br>${a.phone}`:""}${a.address?`<br>${a.address}`:""}${a.landmark?`<br>${a.landmark}`:""}${a.pincode?`<br>${a.pincode}`:""}</div></div></div></div><div class="detail-actions"><button class="secondary" onclick="page('orders')">← My Orders</button>${cancelAllowed?`<button class="cancel-order" style="margin-top:0;padding:11px 14px;font-size:12px" onclick="cancelOrder('${o.id}')">Cancel Order</button>`:`<span class="detail-cancel-disabled">${o.status==="CANCELLED"?"Order cancelled":"Cancellation unavailable after dispatch"}</span>`}</div>`;
 }
-function cancelOrder(id){const o=orders.find(x=>x.id===id);if(!o)return;if(o.status!=="CANCELLED"&&getOrderStageIndex(o.status)>=getOrderStageIndex("READY_TO_SHIP"))return showNotice("Cancellation Not Available","This order cannot be cancelled once it is marked Ready to Ship.","OK",null,"warn");if(o.placedAt&&Date.now()-o.placedAt>24*60*60*1000)return showNotice("Cancellation Window Closed","Orders can only be cancelled within 24 hours of placement.","OK",null,"warn");showNotice("Cancel Order?","Your order will be cancelled. If payment was made online, the eligible refund amount will be refunded to the account used for payment.","Cancel Order",()=>{o.status="CANCELLED";o.cancelledAt=Date.now();o.updatedAt=Date.now();o.history=o.history||[];o.history.push({status:"CANCELLED",at:Date.now(),label:"Order Cancelled"});if(o.payment==="PREPAID")o.refundStatus="Refund to original payment account";db.ref("orders/"+id).update({status:"CANCELLED",cancelledAt:o.cancelledAt,updatedAt:o.updatedAt,history:o.history,refundStatus:o.refundStatus||null});renderOrders();renderOrderDetail(o);toast("Order cancelled");},"warn");}
+/* BUGFIX: this used to compare against getOrderStageIndex("PICKED_UP"),
+   but "PICKED_UP" is not one of the ORDER_STAGES keys — an unknown stage
+   name always resolves to index 0, so the check below was true for
+   EVERY order regardless of its real status, which is why clicking
+   "Cancel Order" always failed with "cannot be cancelled after pickup"
+   even for a freshly placed order. Fixed to check against the real
+   "READY_TO_SHIP" stage: cancellation is allowed only while the order is
+   still "Placed"/"Confirmed" — once it shows "Ready to Ship" (or later),
+   cancellation is blocked. */
+function cancelOrder(id){
+  const o=orders.find(x=>x.id===id);
+  if(!o)return;
+  if(o.status==="CANCELLED")return;
+  if(getOrderStageIndex(o.status)>=getOrderStageIndex("READY_TO_SHIP")){
+    return showNotice("Cancellation Not Available","This order is already being prepared for shipping and can no longer be cancelled.","OK",null,"warn");
+  }
+  if(o.placedAt&&Date.now()-o.placedAt>24*60*60*1000){
+    return showNotice("Cancellation Window Closed","Orders can only be cancelled within 24 hours of placement.","OK",null,"warn");
+  }
+  openCancelOrderModal(id);
+}
+let _cancelOrderPendingId=null;
+function openCancelOrderModal(id){
+  _cancelOrderPendingId=id;
+  const upiInput=document.getElementById("cancelUpiId");
+  const statusEl=document.getElementById("cancelUpiStatus");
+  if(upiInput)upiInput.value="";
+  if(statusEl){statusEl.textContent="";statusEl.classList.remove("err");}
+  document.getElementById("cancelOrderModal").classList.add("show");
+  setTimeout(()=>upiInput?.focus(),50);
+}
+function closeCancelOrderModal(){
+  document.getElementById("cancelOrderModal").classList.remove("show");
+  _cancelOrderPendingId=null;
+}
+function confirmCancelOrderWithUpi(){
+  const id=_cancelOrderPendingId;
+  const o=orders.find(x=>x.id===id);
+  const statusEl=document.getElementById("cancelUpiStatus");
+  if(!o){closeCancelOrderModal();return;}
+  const upiId=(document.getElementById("cancelUpiId").value||"").trim();
+  if(!/^[\w.\-]{2,}@[a-zA-Z]{2,}$/.test(upiId)){
+    if(statusEl){statusEl.textContent="Please enter a valid UPI ID, e.g. name@bank.";statusEl.classList.add("err");}
+    return;
+  }
+  o.status="CANCELLED";
+  o.cancelledAt=Date.now();
+  o.updatedAt=Date.now();
+  o.refundUpiId=upiId;
+  o.refundStatus="Refund will be processed within 2-3 hours to "+upiId;
+  o.history=o.history||[];
+  o.history.push({status:"CANCELLED",at:Date.now(),label:"Order Cancelled"});
+  db.ref("orders/"+id).update({status:"CANCELLED",cancelledAt:o.cancelledAt,updatedAt:o.updatedAt,refundUpiId:upiId,refundStatus:o.refundStatus,history:o.history});
+  closeCancelOrderModal();
+  renderOrders();
+  renderOrderDetail(o);
+  showNotice("Order Cancelled","Refund will be processed within 2-3 hours to the provided UPI ID.","OK",null,"info");
+}
 
 function placeOrder(){
   startCheckout();
@@ -1393,6 +1645,7 @@ try{syncOrderStatuses();}catch(e){console.error("syncOrderStatuses failed:",e);}
 Object.assign(window,{
   accountAction,add,buildUpiLink,buyNow,canCancelOrder,cancelOrder,
   changeDetailQty,changeHomeQty,checkoutItems,checkoutSubtotal,closeLogin,
+  closeCancelOrderModal,confirmCancelOrderWithUpi,
   closeNotice,closePrepaidModal,completePayment,confirmPrepaidFromModal,
   copyUpiId,editCheckoutAddress,getDetailQty,getHomeQty,getOrderStageIndex,
   getOrderStatusLabel,goBackPage,handlePaymentAction,
@@ -1402,6 +1655,7 @@ Object.assign(window,{
   productIcon,productMedia,qty,refreshOrdersFromStorage,
   removeFromCart,renderCart,renderOrderDetail,renderOrders,renderPayment,
   renderProducts,renderRealQr,renderRelatedProducts,renderSummary,
+  retryLoadInventory,
   sanitizeDetailQty,sanitizeHomeQty,saveCheckoutAddress,saveProfile,
   selectPayment,sendOtp,setCategory,showNotice,startCheckout,startQrTimer,
   switchDetailPhoto,syncOrderStatuses,toast,updateHeaderAccount,updateQrCountdown,
