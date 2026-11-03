@@ -9,10 +9,8 @@
      scripts below actually start talking to these hosts, they don't pay
      the connection-setup delay — shaves a real chunk off slow networks. -->
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://jewellery-a32ee-default-rtdb.firebaseio.com" crossorigin>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 <link rel="dns-prefetch" href="https://www.gstatic.com">
-<link rel="dns-prefetch" href="https://jewellery-a32ee-default-rtdb.firebaseio.com">
 <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 <style>
 :root{
@@ -498,6 +496,29 @@ body{min-height:100vh}
  .success-check svg{width:25px!important;height:25px!important}
 }
 </style>
+<style id="detail-polish">
+/* ===== Product detail — image fills its box, left-aligned info ===== */
+#productDetailCard .detail-layout{display:flex;gap:28px;align-items:flex-start;text-align:left;animation:none}
+#productDetailCard .detail-layout.anim{animation:detailOpen .22s ease}
+#productDetailCard .detail-gallery-col{display:flex;flex-direction:column;gap:10px;flex:none;width:min(420px,45%)}
+#productDetailCard .detail-pic{width:100%;height:auto;min-height:0;display:block;border-radius:14px;background:#f7f8fa;border:1px solid #eceef1;overflow:hidden;cursor:default}
+#productDetailCard .detail-pic img.product-photo{display:block;width:100%;height:auto;max-height:480px;object-fit:contain;transform:none!important}
+#productDetailCard .detail-pic .icon-badge{margin:40px auto}
+#productDetailCard .gallery-thumbs{width:100%;overflow-x:auto;padding-bottom:2px}
+#productDetailCard .detail-info{flex:1;min-width:0}
+#productDetailCard .detail-qty{display:flex;align-items:center;gap:14px}
+@media(max-width:760px){
+  #productDetailCard .detail-layout{flex-direction:column;align-items:stretch;gap:16px;text-align:left}
+  #productDetailCard .detail-gallery-col{width:100%}
+  #productDetailCard .detail-pic img.product-photo{max-height:min(105vw,440px)}
+  #productDetailCard .detail-info h2{font-size:21px;line-height:1.25;margin:0 0 4px}
+  #productDetailCard .detail-info .sub{font-size:13px}
+  #productDetailCard .detail-info .price{font-size:28px;margin:10px 0 4px}
+  #productDetailCard .detail-qty{justify-content:space-between;margin:14px 0 0;padding:12px 0;border-top:1px solid #eceef1;border-bottom:1px solid #eceef1}
+  #productDetailCard .detail-actions{max-width:none;margin:16px 0 0;gap:10px}
+  #productDetailCard .detail-actions .add,#productDetailCard .detail-actions .buy-now{height:48px;font-size:14px;border-radius:9px}
+}
+</style>
 </head>
 <body>
 <div class="top-load-bar show" id="topLoadBar"></div>
@@ -696,6 +717,13 @@ body{min-height:100vh}
   <div id="loginStatus" class="status"></div>
  </div>
 </div>
+<div id="miniCart" class="mini-cart">
+  <div class="mini-cart-info" onclick="page('cart')">
+    <span class="mini-cart-icon" id="miniCartIcon">🛒</span>
+    <div><div class="mini-cart-items" id="miniCartItems">0 items</div><div class="mini-cart-total" id="miniCartTotal">₹0</div></div>
+  </div>
+  <button type="button" class="mini-cart-order" onclick="page('cart')">ORDER NOW →</button>
+</div>
 <div id="toast" class="toast"></div>
 
 <div id="noticeModal" class="modal-bg" onclick="if(event.target===this)closeNotice()">
@@ -726,10 +754,20 @@ body{min-height:100vh}
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-database-compat.js"></script>
 <script>
-const firebaseConfig={apiKey:"AIzaSyDQm9D503Y3-twvJjLhLBacU8sH8DBjYgk",authDomain:"jewellery-a32ee.firebaseapp.com",databaseURL:"https://jewellery-a32ee-default-rtdb.firebaseio.com",projectId:"jewellery-a32ee",storageBucket:"jewellery-a32ee.firebasestorage.app",messagingSenderId:"441508659343",appId:"1:441508659343:web:786e05e551f97eee7f30fa"};
-firebase.initializeApp(firebaseConfig);
+// ===== Firebase config (same project as the admin app) =====
+window.FIREBASE_CONFIG={
+  apiKey:"AIzaSyDQm9D503Y3-twvJjLhLBacU8sH8DBjYgk",
+  authDomain:"jewellery-a32ee.firebaseapp.com",
+  databaseURL:"https://jewellery-a32ee-default-rtdb.firebaseio.com",
+  projectId:"jewellery-a32ee",
+  storageBucket:"jewellery-a32ee.firebasestorage.app",
+  messagingSenderId:"441508659343",
+  appId:"1:441508659343:web:786e05e551f97eee7f30fa"
+};
+firebase.initializeApp(window.FIREBASE_CONFIG);
 const db=firebase.database();
 </script>
+<script src="fast.js"></script>
 <script>
 
 /* =========================
@@ -857,6 +895,7 @@ let productsLoaded=false;
 
 function loadProductsFromServer(){ renderProducts(); }
 
+const GALLERY_CACHE={}; // full photo galleries already fetched (survive inventory refreshes)
 function mapInventoryVal(val){
   return Object.keys(val).map(k=>{
     const p=val[k];
@@ -864,14 +903,16 @@ function mapInventoryVal(val){
     // gallery sirf jab product detail khulta hai tab "inventoryPhotos"
     // se alag se load hoti hai (dekho openProduct neeche).
     const listPhoto=p.thumb||(p.photos&&p.photos[0])||p.photo||null;
-    return {id:p.id||k,n:p.title,p:Number(p.price)||0,s:p.subtitle||"Premium quality jewellery item",c:p.category||"all",photos:listPhoto?[listPhoto]:[],icon:"box",rating:Number(p.rating)||0,ratingCount:Number(p.ratingCount)||0};
+    return {id:p.id||k,n:p.title,p:Number(p.price)||0,s:p.subtitle||"Premium quality jewellery item",c:p.category||"all",photos:listPhoto?[listPhoto]:[],gallery:GALLERY_CACHE[p.id||k]||null,icon:"box",rating:Number(p.rating)||0,ratingCount:Number(p.ratingCount)||0};
   });
 }
 function onInventoryUpdate(){
   hideTopBar();
   renderProducts();
   if(window.currentOpenProductId && document.getElementById("productDetail")?.classList.contains("active")){
-    if(PRODUCTS.some(p=>p.id===window.currentOpenProductId))openProduct(window.currentOpenProductId);
+    const cur=PRODUCTS.find(p=>p.id===window.currentOpenProductId);
+    // redraw the open product only if something visible really changed
+    if(cur && detailSig(cur)!==window.__detailSig)renderProductDetail(cur,false);
   }
 }
 function showTopBar(){document.getElementById("topLoadBar")?.classList.add("show");}
@@ -904,70 +945,23 @@ function hideTopBar(){document.getElementById("topLoadBar")?.classList.remove("s
    latency or the product photos themselves being very large (e.g. base64
    images saved directly in the database instead of as compressed Storage
    URLs) — open DevTools > Console (F12) to see "[Inventory timing]" lines. */
-const _invLoadStart=performance.now();
 let fullInventoryLoaded=false;
-const _INV_FETCH_CHUNK=16; // actual Firebase request size — fewer round trips
-const _INV_REVEAL_STEP=4;  // how many products appear on screen at once
-let _invLastKey=null;
-function _loadInventoryPage(){
-  if(fullInventoryLoaded)return;
-  let q=db.ref("inventory").orderByKey().limitToFirst(_INV_FETCH_CHUNK);
-  if(_invLastKey)q=db.ref("inventory").orderByKey().startAfter(_invLastKey).limitToFirst(_INV_FETCH_CHUNK);
-  q.once("value").then(snap=>{
-    const val=snap.val()||{};
-    const keys=Object.keys(val);
-    const approxKB=Math.round(JSON.stringify(val).length/1024);
-    console.log(`[Inventory timing] fetched chunk after "${_invLastKey||"start"}": ${keys.length} product(s) @ ${(performance.now()-_invLoadStart).toFixed(0)}ms, ~${approxKB}KB`);
-    const chunkWasFull=keys.length===_INV_FETCH_CHUNK;
-    if(keys.length){
-      _invLastKey=keys[keys.length-1];
-      const existingIds=new Set(PRODUCTS.map(p=>p.id));
-      const newOnes=mapInventoryVal(val).filter(p=>!existingIds.has(p.id));
-      _revealInSteps(newOnes,chunkWasFull);
-    }else{
-      fullInventoryLoaded=true;
-      _startLiveInventorySync();
-      renderProducts();
-    }
-  }).catch(err=>{
-    console.error("Inventory page load failed:",err);
-  });
-}
-function _revealInSteps(remaining,moreChunkExpected){
-  if(!remaining.length){
-    if(moreChunkExpected){
-      // This chunk is fully revealed — go fetch the next chunk.
-      setTimeout(_loadInventoryPage,80);
-    }else{
-      // Got back fewer than a full chunk — that's every product there is.
-      fullInventoryLoaded=true;
-      _startLiveInventorySync();
-      renderProducts(); // drop the "loading more" hint below the grid
-    }
-    return;
-  }
-  const slice=remaining.splice(0,_INV_REVEAL_STEP);
-  PRODUCTS.push(...slice);
-  productsLoaded=true;
-  onInventoryUpdate();
-  setTimeout(()=>_revealInSteps(remaining,moreChunkExpected),150);
-}
-_loadInventoryPage();
-
-// After every product is in, attach ONE ongoing listener so admin
-// changes (add/edit/delete) still show up live, without ever again
-// re-downloading the whole catalog in one go.
-let _liveSyncStarted=false;
-function _startLiveInventorySync(){
-  if(_liveSyncStarted)return;
-  _liveSyncStarted=true;
+let _inventoryStarted=false;
+/* fast.js turns this single listener into: saved copy shown instantly ->
+   products streamed in over fast parallel HTTP -> live updates after.
+   snap.partial is true while products are still arriving. */
+function _startInventory(){
+  if(_inventoryStarted){ if(window.__fastReloadInventory)window.__fastReloadInventory(); return; }
+  _inventoryStarted=true;
   db.ref("inventory").on("value",snap=>{
     const val=snap.val()||{};
     PRODUCTS=mapInventoryVal(val);
     productsLoaded=true;
+    fullInventoryLoaded=!snap.partial;
     onInventoryUpdate();
-  });
+  },err=>{ console.error("Inventory read failed:",err); });
 }
+_startInventory();
 
 /* Agar load thoda time le raha hai to customer ko error/"Retry Now" jaisa
    scary box dikhaane ke bajaye — bilkul YouTube/big-app style — bas shimmer
@@ -984,10 +978,7 @@ setTimeout(()=>{
 function retryLoadInventory(){
   showTopBar();
   renderProducts();
-  // Restart the same small-page loader (not a big one-shot fetch) so a
-  // retry is just as fast/light as the normal first load.
-  _invLastKey=null;
-  _loadInventoryPage();
+  _startInventory();
 }
 window.addEventListener("online",()=>{ if(!productsLoaded) retryLoadInventory(); });
 // Quietly keep retrying in the background every few seconds while offline/
@@ -1081,6 +1072,33 @@ function setCategory(category,btn){
  renderProducts();
 }
 const SKELETON_CARD='<div class="card product skeleton-card"><div class="pic skeleton-block"></div><div class="skeleton-line" style="width:70%"></div><div class="skeleton-line" style="width:40%"></div><div class="skeleton-line" style="width:50%;height:22px;margin-top:9px"></div></div>';
+/* Updates the product grid in place: only cards whose content really changed
+   are replaced, everything else (images, quantity boxes) is left untouched,
+   so the screen never blinks when data refreshes. */
+function _hashStr(s){let x=5381;for(let i=0;i<s.length;i++)x=((x<<5)+x+s.charCodeAt(i))|0;return s.length+":"+x;}
+function patchProductGrid(el,items,extraHtml){
+  const existing=new Map();
+  [...el.children].forEach(c=>{ if(c.dataset&&c.dataset.pid)existing.set(c.dataset.pid,c); else c.remove(); });
+  const wanted=new Set(items.map(i=>i.id));
+  existing.forEach((c,id)=>{ if(!wanted.has(id)){c.remove();existing.delete(id);} });
+  let prev=null;
+  items.forEach(it=>{
+    const sig=_hashStr(it.html);
+    let c=existing.get(it.id);
+    if(!c||c.dataset.sig!==sig){
+      const t=document.createElement("template");
+      t.innerHTML=it.html.trim();
+      const n=t.content.firstElementChild;
+      n.dataset.pid=it.id;n.dataset.sig=sig;
+      if(c&&c.parentNode)c.replaceWith(n);
+      c=n;
+    }
+    const ref=prev?prev.nextSibling:el.firstChild;
+    if(c!==ref)el.insertBefore(c,ref);
+    prev=c;
+  });
+  if(extraHtml)el.insertAdjacentHTML("beforeend",extraHtml);
+}
 function renderProducts(){
  let q=document.getElementById("search").value.toLowerCase();
  let a=PRODUCTS.filter(x=>{
@@ -1089,7 +1107,7 @@ function renderProducts(){
    return matchesSearch && matchesCategory;
  });
  if(a.length){
-   const cardsHtml=a.map(x=>`<article class="card product">
+   const cardItems=a.map(x=>({id:x.id,html:`<article class="card product">
   <div class="pic" onclick="openProduct('${x.id}')">${productMedia(x)}</div>
   <h3 onclick="openProduct('${x.id}')" title="${x.n}">${x.n}</h3>
   <div class="sub">${x.s}</div>
@@ -1103,7 +1121,7 @@ function renderProducts(){
     </div>
     <button class="add" onclick="add('${x.id}',getHomeQty('${x.id}'))">ADD TO CART</button>
   </div>
-</article>`).join("");
+</article>`}));
    // Some products are already on screen, but more are still on the way
    // from the server — show a couple of shimmer cards + a clear "loading
    // more" line right under the real ones, so the user knows the catalog
@@ -1114,7 +1132,7 @@ function renderProducts(){
        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
        <span>Loading more products…</span>
      </div>`:"";
-   document.getElementById("products").innerHTML=cardsHtml+moreComingHtml;
+   patchProductGrid(document.getElementById("products"),cardItems,moreComingHtml);
  }else if(!productsLoaded){
    // Data hasn't arrived from the server yet — show shimmer placeholders,
    // NOT "no products" and NOT a scary error box, so the user simply feels
@@ -1139,7 +1157,7 @@ function add(id,amount=1){
  amount=Math.max(1,Math.min(999,Number(amount)||1));
  let x=cart.find(x=>x.id===id);
  x?x.qty=Math.min(999,x.qty+amount):cart.push({id:p.id,n:p.n,p:p.p,qty:amount});
- save();toast(amount>1?`${amount} items added to cart`:"Added to cart")
+ save();pulseCart()
 }
 function getDetailQty(){
  const el=document.getElementById("detailQty");
@@ -1171,34 +1189,52 @@ function updateHomeAmount(id){const p=PRODUCTS.find(x=>x.id===id),el=document.ge
 function changeHomeQty(id,delta){const el=document.getElementById(`homeQty-${id}`);if(!el)return;el.value=Math.max(1,Math.min(999,(Number(el.value)||1)+delta));updateHomeAmount(id);}
 function sanitizeHomeQty(id){const el=document.getElementById(`homeQty-${id}`);if(!el)return;el.value=getHomeQty(id);updateHomeAmount(id);}
 
+function getRelQty(id){const el=document.getElementById(`relQty-${id}`);return Math.max(1,Math.min(999,Number(el?.value)||1));}
+function updateRelAmount(id){const p=PRODUCTS.find(x=>x.id===id),el=document.getElementById(`relPrice-${id}`);if(p&&el)el.textContent=money(p.p*getRelQty(id));}
+function changeRelQty(id,d){const el=document.getElementById(`relQty-${id}`);if(!el)return;el.value=Math.max(1,Math.min(999,(Number(el.value)||1)+d));updateRelAmount(id);}
+function sanitizeRelQty(id){const el=document.getElementById(`relQty-${id}`);if(!el)return;el.value=getRelQty(id);updateRelAmount(id);}
+function pulseCart(){const c=document.getElementById("count"),b=c&&c.closest("button");[c,b,document.getElementById("miniCartIcon")].forEach(e=>{if(!e)return;e.classList.remove("cart-pulse");void e.offsetWidth;e.classList.add("cart-pulse");});}
+function updateMiniCart(){
+  const n=cart.reduce((a,x)=>a+x.qty,0),t=cart.reduce((a,x)=>a+x.p*x.qty,0);
+  const i=document.getElementById("miniCartItems"),tt=document.getElementById("miniCartTotal");
+  if(i)i.textContent=n+(n===1?" item":" items");
+  if(tt)tt.textContent=money(t);
+  const m=document.getElementById("miniCart");if(m)m.classList.toggle("has-items",n>0);
+}
 function openProduct(id){
  id=String(id);
  let x=PRODUCTS.find(p=>p.id===id);
  if(!x)return;
  window.currentOpenProductId=id;
- renderProductDetail(x);
+ renderProductDetail(x,true);
  page("productDetail",null,"productDetail:"+x.id);
- // Home listing sirf ek chhoti thumb rakhti hai (fast load ke liye) —
- // poori photo gallery yahan alag se, sirf jab product khola jaaye tab
- // "inventoryPhotos" se laate hain, aur ready hote hi swap kar dete hain.
+ if(x.gallery&&x.gallery.length)return; // full gallery already loaded earlier
+ // Home listing keeps only one small thumb (fast load) — the full gallery is
+ // fetched here, only when a product is opened, and swapped in quietly.
  db.ref("inventoryPhotos/"+id).once("value").then(snap=>{
-   if(window.currentOpenProductId!==id)return; // user aage badh chuka
+   if(window.currentOpenProductId!==id)return; // user moved on
    const val=snap.val();
    const full=(val&&val.photos&&val.photos.length)?val.photos:null;
    if(full){
-     x.photos=full;
-     renderProductDetail(x);
+     GALLERY_CACHE[id]=full;
+     const cur=PRODUCTS.find(p=>p.id===id)||x;
+     cur.gallery=full;
+     renderProductDetail(cur,false);
    }
  }).catch(err=>console.error("Failed to load product gallery:",err));
 }
-function renderProductDetail(x){
- const gallery=(x.photos&&x.photos.length>1) ? `
-   <div class="detail-gallery-col">
-     <div class="pic detail-pic" id="detailMainPic">${productMedia(x)}</div>
-     <div class="gallery-thumbs">${x.photos.map((src,i)=>`<div class="gallery-thumb ${i===0?'active':''}" onclick="switchDetailPhoto('${x.id}',${i},this)"><img src="${src}" alt="${x.n} photo ${i+1}"></div>`).join('')}</div>
-   </div>` : `<div class="pic detail-pic">${productMedia(x)}</div>`;
+function detailPics(x){return (x.gallery&&x.gallery.length)?x.gallery:(x.photos||[]);}
+function detailSig(x){const p=detailPics(x);return [x.n,x.p,x.s,x.c,x.rating,x.ratingCount,p.length,p[0]?p[0].length:0].join("|");}
+function detailImgHtml(x,src){return src?`<img class="product-photo" src="${src}" alt="${x.n}">`:productIcon(x.icon||"box");}
+function renderProductDetail(x,animate){
+ const pics=detailPics(x);
+ const gallery=`<div class="detail-gallery-col">
+     <div class="pic detail-pic" id="detailMainPic">${detailImgHtml(x,pics[0])}</div>
+     ${pics.length>1?`<div class="gallery-thumbs">${pics.map((src,i)=>`<div class="gallery-thumb ${i===0?'active':''}" onclick="switchDetailPhoto('${x.id}',${i},this)"><img src="${src}" alt="${x.n} photo ${i+1}"></div>`).join('')}</div>`:''}
+   </div>`;
+ window.__detailSig=detailSig(x);
  document.getElementById("productDetailCard").innerHTML=`
-  <div class="detail-layout">
+  <div class="detail-layout${animate?' anim':''}">
    ${gallery}
    <div class="detail-info">
     <h2>${x.n}</h2>
@@ -1215,17 +1251,17 @@ function renderProductDetail(x){
     </div>
     <div class="detail-actions">
       <button class="add" onclick="add('${x.id}', getDetailQty())">ADD TO CART</button>
-      <button class="buy-now" onclick="buyNow('${x.id}', getDetailQty())">BUY NOW</button>
     </div>
    </div>
   </div>`;
- renderRelatedProducts(x.id);
+ if(animate||window.__relFor!==x.id){renderRelatedProducts(x.id);window.__relFor=x.id;}
 }
 function switchDetailPhoto(id,i,thumbEl){
  const x=PRODUCTS.find(p=>p.id===id);
- if(!x||!x.photos||!x.photos[i])return;
+ const pics=x?detailPics(x):[];
+ if(!x||!pics[i])return;
  const mainPic=document.getElementById("detailMainPic");
- if(mainPic) mainPic.innerHTML=`<img class="product-photo" src="${x.photos[i]}" alt="${x.n}" loading="lazy">`;
+ if(mainPic) mainPic.innerHTML=detailImgHtml(x,pics[i]);
  document.querySelectorAll(".gallery-thumb").forEach(t=>t.classList.remove("active"));
  if(thumbEl) thumbEl.classList.add("active");
 }
@@ -1238,10 +1274,14 @@ function renderRelatedProducts(excludeId){
   <h3 onclick="openProduct('${x.id}')" title="${x.n}">${x.n}</h3>
   <div class="sub">${x.s}</div>
   ${ratingHtml(x)}
-  <div class="price">${money(x.p)}</div>
+  <div class="price" id="relPrice-${x.id}" data-unit-price="${x.p}">${money(x.p)}</div>
   <div class="product-actions">
-    <button class="add" onclick="add('${x.id}')">ADD TO CART</button>
-    <button class="buy-now" onclick="buyNow('${x.id}')">BUY NOW</button>
+    <div class="home-qty" aria-label="Quantity for ${x.n}">
+      <button type="button" onclick="changeRelQty('${x.id}',-1)">−</button>
+      <input id="relQty-${x.id}" type="number" min="1" max="999" value="1" oninput="sanitizeRelQty('${x.id}')" aria-label="Quantity">
+      <button type="button" onclick="changeRelQty('${x.id}',1)">+</button>
+    </div>
+    <button class="add" onclick="add('${x.id}',getRelQty('${x.id}'))">ADD TO CART</button>
   </div>
  </article>`).join("");
 }
@@ -1407,6 +1447,7 @@ async function completePayment(utr){
 }
 
 function renderCart(){
+ try{updateMiniCart()}catch(e){}
  document.getElementById("count").textContent=cart.reduce((a,x)=>a+x.qty,0);
  let box=document.getElementById("cartList");
  if(!cart.length){box.innerHTML='<div class="empty">Your cart is empty.<br><br>Go to Home and add products.</div>';}
@@ -1720,4 +1761,119 @@ try{setupPincodeValidation();}catch(e){console.warn("Pincode validation setup fa
 <style>
 /* Requested compact professional mobile category + quantity UI */
 @media(max-width:760px){.nav{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;overflow:hidden!important;gap:4px!important;padding:7px 2%!important}.nav button{font-size:10px!important;padding:8px 1px!important;min-width:0!important;white-space:nowrap!important}.home-qty{height:24px!important}.home-qty button{width:20px!important;font-size:12px!important}.home-qty input{width:22px!important;font-size:10px!important}.product{min-height:330px!important}.detail-qty .qty-control button,.qty-control button{width:26px!important;height:26px!important}.qty-control input{width:32px!important;height:26px!important}.qty button{width:24px!important;height:24px!important}.cart-row-actions{gap:8px!important}}
+</style><style>
+/* ===== Professional button fix (checkout + product buttons) ===== */
+
+/* 1. Save & Continue / checkout action buttons: big, full-width, easy to tap */
+.checkout-actions{display:flex!important;gap:10px!important;margin-top:22px!important}
+.checkout-actions button,.checkout-actions .add{
+  height:52px!important;min-height:52px!important;font-size:16px!important;font-weight:800!important;
+  letter-spacing:.3px!important;border-radius:12px!important;padding:0 22px!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;
+  background:#2b1b12!important;color:#fff!important;border:0!important;
+  box-shadow:0 6px 16px rgba(43,27,18,.22)!important;cursor:pointer
+}
+.checkout-actions button:active{transform:scale(.98)}
+.checkout-actions .secondary{background:#f3f4f6!important;color:#374151!important;box-shadow:none!important;border:1px solid #e1e5e9!important}
+@media(max-width:760px){
+  .checkout-actions{flex-direction:column!important}
+  .checkout-actions button,.checkout-actions .add{width:100%!important}
+}
+
+/* 2. Home product cards: qty + ADD TO CART, bigger and balanced */
+.product-actions{gap:8px!important}
+.product-actions .add,.product-actions .buy-now{
+  height:40px!important;font-size:12.5px!important;font-weight:800!important;letter-spacing:.4px!important;
+  border-radius:10px!important;padding:0 8px!important;white-space:nowrap
+}
+.product-actions .add{flex:1!important}
+.product-actions .buy-now{flex:1!important}
+.home-qty{height:40px!important;border-radius:10px!important}
+.home-qty button{width:28px!important;font-size:15px!important}
+.home-qty input{width:28px!important;font-size:12px!important}
+
+/* Related products (Add to Cart + Buy Now, no qty box): 2 equal columns */
+#relatedProducts .product-actions{display:grid!important;grid-template-columns:1fr 1fr;gap:8px!important}
+
+/* 3. Product detail page: sticky bottom action bar on mobile */
+@media(max-width:760px){
+  #productDetailCard{padding-bottom:90px!important}
+  #productDetailCard .detail-actions{
+    position:fixed!important;left:0;right:0;bottom:0;z-index:50;margin:0!important;max-width:none!important;
+    display:grid!important;grid-template-columns:1fr 1fr;gap:10px!important;
+    padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px))!important;
+    background:#fff;border-top:1px solid #e5e7eb;box-shadow:0 -6px 20px rgba(0,0,0,.08)
+  }
+  #productDetailCard .detail-actions .add,
+  #productDetailCard .detail-actions .buy-now{height:50px!important;font-size:14px!important;font-weight:800!important;border-radius:12px!important}
+}
+</style>
+<style>
+/* cart highlight when item added */
+@keyframes cartPulse{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(212,175,55,.9)}40%{transform:scale(1.18);box-shadow:0 0 0 8px rgba(212,175,55,.35)}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(212,175,55,0)}}
+.head-btn.cart-pulse{animation:cartPulse .9s ease 2;background:rgba(212,175,55,.25)!important;border-radius:10px}
+.count.cart-pulse{animation:cartPulse .9s ease 2;background:#d4af37;color:#2b1b12}
+/* related cards: qty + add to cart in one row */
+#relatedProducts .product-actions{display:flex!important;grid-template-columns:none}
+</style>
+<style>
+/* Only ADD TO CART on product pages; ORDER NOW lives in the cart */
+.buy-now{display:none!important}
+.detail-actions{max-width:none!important}
+.detail-actions .add{width:100%}
+@media(max-width:760px){
+  #productDetailCard .detail-actions{grid-template-columns:1fr!important}
+}
+/* Cart: big, clear ORDER NOW */
+.cart-summary{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.cart-summary .order{
+  height:54px;padding:0 28px;font-size:16px;font-weight:800;letter-spacing:.4px;border-radius:12px;border:0;
+  background:#e53935;color:#fff;box-shadow:0 6px 16px rgba(229,57,53,.28);cursor:pointer
+}
+.cart-summary .order:active{transform:scale(.98)}
+@media(max-width:760px){
+  .cart-summary{flex-direction:column;align-items:stretch;text-align:center}
+  .cart-summary .order{width:100%}
+}
+</style>
+<style>
+/* Detail page: normal (non-sticky) ADD TO CART, smaller photo */
+#productDetailCard{padding-bottom:26px!important}
+#productDetailCard .detail-actions{
+  position:static!important;display:block!important;margin:16px 0 0!important;padding:0!important;
+  background:none!important;border:0!important;box-shadow:none!important
+}
+#productDetailCard .detail-actions .add{width:100%!important;height:50px!important;font-size:15px!important;font-weight:800!important;border-radius:12px!important}
+@media(max-width:760px){
+  #productDetailCard .detail-gallery-col{display:flex;flex-direction:column;align-items:center}
+  #productDetailCard .detail-pic{width:min(58vw,230px)!important;height:auto!important;margin:0 auto}
+  #productDetailCard .detail-pic img.product-photo{max-height:230px!important;width:100%;object-fit:contain}
+  #productDetailCard .detail-layout{gap:12px!important}
+}
+
+/* Always-visible cart bar (home + product pages) */
+.mini-cart{
+  display:none;position:fixed;left:0;right:0;bottom:0;z-index:60;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));background:#fff;border-top:1px solid #e5e7eb;
+  box-shadow:0 -6px 20px rgba(0,0,0,.10)
+}
+body:has(#home.active) .mini-cart,body:has(#productDetail.active) .mini-cart{display:flex}
+body:has(#home.active),body:has(#productDetail.active){padding-bottom:84px}
+.mini-cart-info{display:flex;align-items:center;gap:10px;cursor:pointer;min-width:0}
+.mini-cart-icon{width:42px;height:42px;border-radius:12px;background:#2b1b12;display:grid;place-items:center;font-size:20px;flex:none}
+.mini-cart-items{font-size:12px;color:#6b7280;font-weight:700}
+.mini-cart-total{font-size:18px;font-weight:900;color:#2b1b12;line-height:1.1}
+.mini-cart-order{height:48px;padding:0 24px;border:0;border-radius:12px;background:#e53935;color:#fff;font-size:15px;font-weight:800;letter-spacing:.4px;box-shadow:0 6px 16px rgba(229,57,53,.28);cursor:pointer;white-space:nowrap}
+.mini-cart-order:active{transform:scale(.97)}
+.mini-cart:not(.has-items) .mini-cart-order{background:#cfd3d8;box-shadow:none}
+.toast{bottom:90px!important}
+.head-btn.cart-pulse,.mini-cart.cart-pulse{animation:cartPulse .9s ease 2}
+</style>
+<style>
+/* calm highlight: no scaling, no repeating */
+@keyframes cartFlash{0%{box-shadow:0 0 0 0 rgba(212,175,55,.9)}100%{box-shadow:0 0 0 10px rgba(212,175,55,0)}}
+.head-btn.cart-pulse,.count.cart-pulse,.mini-cart-icon.cart-pulse{animation:cartFlash .7s ease 1!important;transform:none!important}
+.mini-cart-icon.cart-pulse{background:#d4af37}
+.mini-cart.cart-pulse{animation:none!important}
+.mini-cart{transform:none!important}
 </style>
