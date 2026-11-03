@@ -1434,10 +1434,24 @@ async function completePayment(utr){
     delivery=new Date(orderDate);
   delivery.setDate(delivery.getDate()+5);
   const orderItems=JSON.parse(JSON.stringify(checkoutItems()));
-  const orderId="JR-"+Date.now()+"-"+Math.random().toString(36).substring(2,8);
+  const orderId=window.__pendingOrderId||("JR-"+Date.now()+"-"+Math.random().toString(36).substring(2,8));
+  window.__pendingOrderId=orderId;
   const orderObj={id:orderId,customerPhone:profileData.phone||"",date:orderDate.toLocaleString("en-IN"),deliveryDate:delivery.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}),subtotal,shipping,discount,total,items:orderItems,payment:method,utr:utr||null,status:"PLACED",placedAt:orderDate.getTime(),updatedAt:orderDate.getTime(),address:JSON.parse(JSON.stringify(profileData)),history:[{status:"PLACED",at:orderDate.getTime(),label:"Order Placed"}]};
+  // Cart is cleared ONLY after the server confirms the order. If saving fails
+  // (no internet, server error, timeout) the cart stays exactly as it was.
+  try{
+    await Promise.race([
+      db.ref("orders/"+orderId).set(orderObj),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),15000))
+    ]);
+  }catch(err){
+    if(actionBtn)actionBtn.disabled=false;
+    if(modalBtn)modalBtn.disabled=false;
+    showNotice("Order Not Placed","Your order could not be placed (check internet and try again). Your cart is safe - all items are still in your cart.","Open Cart",()=>page("cart"),"warn");
+    return;
+  }
+  window.__pendingOrderId=null;
   orders.unshift(orderObj);
-  db.ref("orders/"+orderId).set(orderObj);
   cart=[];save();
   document.getElementById("successText").textContent=`Order #${orderId} confirmed • ${method==="COD"?"Cash on Delivery":"Prepaid (UPI)"} • Delivery by ${delivery.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}.`;
   document.getElementById("successBadges").innerHTML=`<span class="success-badge">✓ Payment: ${method==="COD"?"COD":"Prepaid"}</span><span class="success-badge">✓ Total: ${money(total)}</span><span class="success-badge">✓ Status: Placed</span>`;
