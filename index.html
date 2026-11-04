@@ -1890,4 +1890,15 @@ body:has(#home.active),body:has(#productDetail.active){padding-bottom:84px}
 .mini-cart-icon.cart-pulse{background:#d4af37}
 .mini-cart.cart-pulse{animation:none!important}
 .mini-cart{transform:none!important}
+</style><style>
+/* Image box fix: square box, full image always visible (no cropping, no tiny strip) */
+.product .pic{height:auto!important;aspect-ratio:4/5;padding:0;background:#f7f8fa}
+.product .pic img.product-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;padding:0}
+.product:hover .pic img.product-photo{transform:scale(1.03)}
+.cart-thumb img{object-fit:contain}
+@media(max-width:760px){
+  .product .pic{height:auto!important}
+  #productDetailCard .detail-pic{width:min(78vw,320px)!important}
+  #productDetailCard .detail-pic img.product-photo{max-height:320px!important;position:static;height:auto;padding:0}
+}
 </style>
