@@ -177,7 +177,7 @@
     }
 
     var LIGHT_BYTES=200*1024;   // a product bigger than this is "heavy"
-    var FIELDS=['title','price','category','rating','ratingCount','subtitle'];
+    var FIELDS=['title','price','category','rating','ratingCount','subtitle','createdAt','addedAt','created','timestamp'];
     var heavyThumb={};          // id -> small thumb already known for a heavy product
     var thumbQ=[],thumbRunning=0,curMap=null,curIds=[],dirtyTimer=null;
 

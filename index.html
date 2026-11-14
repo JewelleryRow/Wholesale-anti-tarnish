@@ -519,6 +519,10 @@ body{min-height:100vh}
   #productDetailCard .detail-actions .add,#productDetailCard .detail-actions .buy-now{height:48px;font-size:14px;border-radius:9px}
 }
 </style>
+<style>
+/* NEW tag on recently added products */
+.new-tag{position:absolute;top:8px;left:8px;z-index:3;background:linear-gradient(135deg,#ff3d57,#ff7a18);color:#fff;font:900 11px/1 Arial,sans-serif;letter-spacing:.8px;padding:6px 10px;border-radius:999px;box-shadow:0 3px 10px rgba(255,61,87,.35);pointer-events:none}
+</style>
 </head>
 <body>
 <div class="top-load-bar show" id="topLoadBar"></div>
@@ -896,6 +900,42 @@ let productsLoaded=false;
 function loadProductsFromServer(){ renderProducts(); }
 
 const GALLERY_CACHE={}; // full photo galleries already fetched (survive inventory refreshes)
+/* ===== NEW products: 9 din tak sabse upar, 7 din tak "NEW" tag ===== */
+const NEW_TOP_DAYS=9, NEW_TAG_DAYS=7, DAY_MS=86400000;
+const _PUSH_CHARS="-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz";
+function _pushIdTime(id){
+  // Firebase push() id (e.g. -Nabc...) ke pehle 8 chars me time chhupa hota hai
+  id=String(id||"");
+  if(id.length!==20||id[0]!=="-")return 0;
+  let t=0;
+  for(let i=0;i<8;i++){const n=_PUSH_CHARS.indexOf(id[i]);if(n<0)return 0;t=t*64+n;}
+  return t>1420070400000&&t<4102444800000?t:0;
+}
+function _productTime(p,key){
+  const raw=p.createdAt||p.addedAt||p.created||p.timestamp||p.ts||0;
+  let t=Number(raw);
+  if(!t&&raw){t=Date.parse(raw);}
+  if(t>0&&t<1e11)t*=1000; // seconds -> ms
+  if(t>0&&!isNaN(t))return t;
+  // admin panel ids: jr-<milliseconds>, e.g. jr-1731567890123
+  const m=/^jr-(\d{12,13})$/.exec(String(p.id||key));
+  if(m)return Number(m[1]);
+  return _pushIdTime(p.id||key)||0;
+}
+function productAgeDays(x){
+  return x&&x.ts?(Date.now()-x.ts)/DAY_MS:Infinity;
+}
+function isNewProduct(x){const a=productAgeDays(x);return a>=-1&&a<NEW_TAG_DAYS;}
+function isTopProduct(x){const a=productAgeDays(x);return a>=-1&&a<NEW_TOP_DAYS;}
+// 9 din ke andar wale naye products upar (sabse naya pehle), baaki ka order same rahta hai
+function sortNewFirst(list){
+  const fresh=list.filter(isTopProduct).sort((a,b)=>b.ts-a.ts);
+  const rest=list.filter(x=>!isTopProduct(x));
+  return fresh.concat(rest);
+}
+function newTagHtml(x){
+  return isNewProduct(x)?'<span class="new-tag">NEW</span>':"";
+}
 function mapInventoryVal(val){
   return Object.keys(val).map(k=>{
     const p=val[k];
@@ -903,7 +943,7 @@ function mapInventoryVal(val){
     // gallery sirf jab product detail khulta hai tab "inventoryPhotos"
     // se alag se load hoti hai (dekho openProduct neeche).
     const listPhoto=p.thumb||(p.photos&&p.photos[0])||p.photo||null;
-    return {id:p.id||k,n:p.title,p:Number(p.price)||0,s:p.subtitle||"Premium quality jewellery item",c:p.category||"all",photos:listPhoto?[listPhoto]:[],gallery:GALLERY_CACHE[p.id||k]||null,icon:"box",rating:Number(p.rating)||0,ratingCount:Number(p.ratingCount)||0};
+    return {id:p.id||k,n:p.title,p:Number(p.price)||0,s:p.subtitle||"Premium quality jewellery item",c:p.category||"all",photos:listPhoto?[listPhoto]:[],gallery:GALLERY_CACHE[p.id||k]||null,icon:"box",rating:Number(p.rating)||0,ratingCount:Number(p.ratingCount)||0,ts:_productTime(p,k)};
   });
 }
 function onInventoryUpdate(){
@@ -1106,9 +1146,10 @@ function renderProducts(){
    let matchesCategory=activeCategory==="all" || x.c===activeCategory;
    return matchesSearch && matchesCategory;
  });
+ a=sortNewFirst(a);
  if(a.length){
    const cardItems=a.map(x=>({id:x.id,html:`<article class="card product">
-  <div class="pic" onclick="openProduct('${x.id}')">${productMedia(x)}</div>
+  <div class="pic" onclick="openProduct('${x.id}')">${productMedia(x)}${newTagHtml(x)}</div>
   <h3 onclick="openProduct('${x.id}')" title="${x.n}">${x.n}</h3>
   <div class="sub">${x.s}</div>
   ${ratingHtml(x)}
@@ -1229,7 +1270,7 @@ function detailImgHtml(x,src){return src?`<img class="product-photo" src="${src}
 function renderProductDetail(x,animate){
  const pics=detailPics(x);
  const gallery=`<div class="detail-gallery-col">
-     <div class="pic detail-pic" id="detailMainPic">${detailImgHtml(x,pics[0])}</div>
+     <div class="pic detail-pic" id="detailMainPic">${detailImgHtml(x,pics[0])}${newTagHtml(x)}</div>
      ${pics.length>1?`<div class="gallery-thumbs">${pics.map((src,i)=>`<div class="gallery-thumb ${i===0?'active':''}" onclick="switchDetailPhoto('${x.id}',${i},this)"><img src="${src}" alt="${x.n} photo ${i+1}"></div>`).join('')}</div>`:''}
    </div>`;
  window.__detailSig=detailSig(x);
@@ -1261,7 +1302,7 @@ function switchDetailPhoto(id,i,thumbEl){
  const pics=x?detailPics(x):[];
  if(!x||!pics[i])return;
  const mainPic=document.getElementById("detailMainPic");
- if(mainPic) mainPic.innerHTML=detailImgHtml(x,pics[i]);
+ if(mainPic) mainPic.innerHTML=detailImgHtml(x,pics[i])+newTagHtml(x);
  document.querySelectorAll(".gallery-thumb").forEach(t=>t.classList.remove("active"));
  if(thumbEl) thumbEl.classList.add("active");
 }
@@ -1269,8 +1310,9 @@ function renderRelatedProducts(excludeId){
  let current=PRODUCTS.find(p=>p.id===excludeId);
  let others=PRODUCTS.filter(x=>x.id!==excludeId && (!current || x.c===current.c));
  if(!others.length)others=PRODUCTS.filter(x=>x.id!==excludeId);
+ others=sortNewFirst(others);
  document.getElementById("relatedProducts").innerHTML=others.map(x=>`<article class="card product">
-  <div class="pic" onclick="openProduct('${x.id}')">${productMedia(x)}</div>
+  <div class="pic" onclick="openProduct('${x.id}')">${productMedia(x)}${newTagHtml(x)}</div>
   <h3 onclick="openProduct('${x.id}')" title="${x.n}">${x.n}</h3>
   <div class="sub">${x.s}</div>
   ${ratingHtml(x)}
