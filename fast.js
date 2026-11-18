@@ -31,6 +31,7 @@
   /* ---------- small status pill (shows progress / errors on the phone) ---------- */
   var pill=null,pillHideTimer=null;
   function showPill(msg,isErr,autohide){
+    if(!isErr){return}   /* loading / progress messages are hidden - only real errors are shown */
     try{
       if(!pill){
         pill=document.createElement('div');

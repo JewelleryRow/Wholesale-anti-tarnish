@@ -523,6 +523,110 @@ body{min-height:100vh}
 /* NEW tag on recently added products */
 .new-tag{position:absolute;top:8px;left:8px;z-index:3;background:linear-gradient(135deg,#ff3d57,#ff7a18);color:#fff;font:900 11px/1 Arial,sans-serif;letter-spacing:.8px;padding:6px 10px;border-radius:999px;box-shadow:0 3px 10px rgba(255,61,87,.35);pointer-events:none}
 </style>
+<style>
+/* FREE GIFT bar, popup, cart rows */
+.gift-bar{margin:0 0 28px;border-radius:20px;background:linear-gradient(125deg,#2b1b12 0%,#4b2f1c 60%,#2b1b12 100%);color:#fff;padding:18px 18px 14px;box-shadow:0 14px 34px rgba(43,27,18,.28);border:1px solid rgba(212,175,55,.45);position:relative;overflow:hidden}
+.gift-bar:before{content:"";position:absolute;right:-70px;top:-90px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.28),transparent 70%);pointer-events:none}
+.gb-top{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px;position:relative}
+.gb-badge{background:linear-gradient(135deg,#f3d36b,#d4af37);color:#2b1b12;font-weight:950;font-size:12px;letter-spacing:1px;padding:6px 12px;border-radius:999px}
+.gb-note{font-size:12.5px;color:#f1e3c0}
+.gb-slider{position:relative}
+.gb-track{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.gb-track::-webkit-scrollbar{display:none}
+.gb-card{flex:0 0 100%;scroll-snap-align:start;display:flex;flex-direction:column;gap:14px;background:#fff;color:#171717;border-radius:18px;padding:16px;min-width:0}
+@media(min-width:900px){.gb-card{flex-basis:calc(50% - 6px)}}
+.gb-headrow{display:flex;gap:16px;align-items:center}
+.gb-imgbox{position:relative;width:48%;max-width:260px;aspect-ratio:1/1;flex:none;border-radius:16px;overflow:hidden;border:2px solid #d4af37;background:#fff6db}
+.gb-img{width:100%;height:100%;object-fit:cover;display:block}
+.gb-ph{width:100%;height:100%;display:grid;place-items:center;font-size:56px}
+.gb-ribbon{position:absolute;left:0;top:0;right:0;text-align:center;background:linear-gradient(90deg,#e53935,#ff6a3d);color:#fff;font-size:13px;font-weight:950;letter-spacing:1.4px;padding:7px 6px;box-shadow:0 3px 10px rgba(229,57,53,.35)}
+.gb-side{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+.gb-title{font-size:23px;font-weight:900;line-height:1.2;word-break:break-word}
+.gb-min{align-self:flex-start;background:#fff6db;color:#7c5a00;border:1px solid #f0e2a0;font-size:13px;font-weight:900;padding:5px 11px;border-radius:999px}
+.gb-details{border-top:1px dashed #e3e5e8;padding-top:12px}
+.gb-reason{font-size:14px;color:#444;line-height:1.5}
+.gb-timerline{margin-top:8px;font-size:13px;font-weight:800;color:#b45309}
+.gb-timer{font-variant-numeric:tabular-nums}
+.gb-prog{margin-top:11px;height:7px;background:#eee;border-radius:99px;overflow:hidden}
+.gb-prog i{display:block;height:100%;background:linear-gradient(90deg,#d4af37,#12823f);border-radius:99px}
+.gb-state{display:block;margin-top:7px;font-size:13px;font-weight:800;color:#6f4826}
+.gb-card.got .gb-state{color:#12823f}
+.gb-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.95);color:#2b1b12;font-size:22px;font-weight:900;line-height:1;box-shadow:0 4px 14px rgba(0,0,0,.25);display:grid;place-items:center;cursor:pointer;padding:0}
+.gb-prev{left:-8px}.gb-next{right:-8px}
+.gb-dots{display:flex;justify-content:center;gap:7px;margin-top:12px;position:relative}
+.gb-dot{width:8px;height:8px;border-radius:99px;background:rgba(255,255,255,.35);border:0;padding:0;transition:.25s;cursor:pointer}
+.gb-dot.on{width:22px;background:#d4af37}
+@media(max-width:760px){.gb-card{gap:12px;padding:12px}.gb-headrow{gap:12px}.gb-imgbox{width:50%}.gb-title{font-size:18px}.gb-arrow{display:none}.gift-bar{padding:14px 12px 12px;border-radius:16px}}
+/* ---- Free gift banner v2: big photo on top, details below the photo ---- */
+.gift-bar{padding:16px 16px 14px}
+.gb-card{padding:0;gap:0;overflow:hidden;border-radius:18px;box-shadow:0 8px 24px rgba(0,0,0,.18);transition:transform .2s}
+.gb-card:active{transform:scale(.985)}
+.gb-headrow{display:block}
+.gb-imgbox{width:100%;max-width:none;aspect-ratio:4/3;border:0;border-radius:0;background:#fff6db}
+.gb-imgbox:after{content:"";position:absolute;left:0;right:0;bottom:0;height:38%;background:linear-gradient(to top,rgba(0,0,0,.35),transparent);pointer-events:none}
+.gb-ribbon{left:12px;right:auto;top:12px;border-radius:999px;padding:6px 13px;font-size:12px;box-shadow:0 4px 12px rgba(229,57,53,.45)}
+.gb-side{padding:14px 16px 0;gap:8px}
+.gb-title{font-size:21px}
+.gb-details{border-top:0;padding:10px 16px 16px}
+.gb-more{display:inline-block;margin-top:9px;font-size:12.5px;font-weight:800;color:#9a7a2a}
+@media(max-width:760px){.gb-card{padding:0;gap:0}.gb-imgbox{width:100%;aspect-ratio:1/1;max-height:360px}.gb-title{font-size:18px}.gb-side{padding:12px 13px 0}.gb-details{padding:8px 13px 14px}}
+.load-hint{display:none!important}   /* no "Loading more products..." text */
+/* ---- compact hero (only the small tagline + offer banner) ---- */
+.hero{padding:16px 22px;margin-bottom:20px;min-height:0}
+.hero .hero-tag{margin:0;font-size:14px;font-weight:800;letter-spacing:.4px;color:#5a4a2a}
+.hero .offer-banner{margin-top:10px}
+@media(max-width:760px){.hero{padding:13px 15px;margin-bottom:16px;align-items:center}.hero .hero-tag{font-size:12.5px}.hero .offer-banner{margin-top:8px}}
+/* ---- popups: background page must not scroll ---- */
+body.scroll-locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
+.modal-bg{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.modal-bg>*{margin:auto}
+.gift-hint{margin:10px 0;padding:11px 14px;border-radius:10px;background:#eaf8ef;border:1px solid #cfe9d8;color:#17603a;font-size:13px;font-weight:700;text-align:center}
+.cart-gift-row{background:#f4fbf6}
+.cart-gift-row .gift-free{color:#12823f;font-weight:950}
+.gift-tag{display:inline-block;background:#e53935;color:#fff;font-size:10px;font-weight:900;padding:2px 7px;border-radius:999px;margin-left:6px;vertical-align:middle}
+.gm-item{display:flex;gap:12px;align-items:center;text-align:left;border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin-top:10px}
+.gm-item img,.gm-ph{width:74px;height:74px;border-radius:10px;object-fit:cover;flex:none;background:#fff6db;display:grid;place-items:center;font-size:32px}
+.gm-item b{font-size:15px}
+.gift-modal-emoji{font-size:44px;line-height:1;margin-bottom:6px}
+</style>
+<style>
+/* gift unlock popup + gift detail sheet */
+.gm-modal,.gd-modal{padding:0!important;overflow:hidden auto;max-height:92vh;border-radius:22px;text-align:left}
+.gm-modal{width:min(410px,100%)}
+.gd-modal{width:min(470px,100%)}
+.gm-head{position:relative;overflow:hidden;background:linear-gradient(125deg,#2b1b12,#4b2f1c);color:#fff;text-align:center;padding:24px 20px 20px;border-bottom:3px solid #d4af37}
+.gm-head .gm-kicker{display:inline-block;background:linear-gradient(135deg,#f3d36b,#d4af37);color:#2b1b12;font-size:11px;font-weight:950;letter-spacing:1.3px;padding:5px 12px;border-radius:999px}
+.gm-head h2{margin:12px 0 4px!important;font-size:23px;letter-spacing:-.3px}
+.gm-head p{margin:0;font-size:13px;color:#f1e3c0}
+.gm-spark{position:absolute;font-size:16px;opacity:0;animation:gmSpark 2.4s ease-in-out infinite}
+@keyframes gmSpark{0%{opacity:0;transform:translateY(12px) scale(.6)}40%{opacity:1}100%{opacity:0;transform:translateY(-14px) scale(1.1)}}
+.gm-body{padding:18px 18px 20px}
+.gm-gift{border:1px solid #ece7d6;border-radius:18px;padding:12px;background:linear-gradient(180deg,#fffdf4,#fff);cursor:pointer;margin-bottom:12px}
+.gm-photo{position:relative;width:min(100%,250px);aspect-ratio:1/1;margin:0 auto;border-radius:16px;overflow:hidden;border:2px solid #d4af37;background:#fff6db;animation:gmPop .5s cubic-bezier(.2,1.3,.4,1)}
+@keyframes gmPop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+.gm-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.gm-photo .gm-ph{width:100%;height:100%;display:grid;place-items:center;font-size:64px}
+.gm-ribbon{position:absolute;left:0;right:0;top:0;text-align:center;background:linear-gradient(90deg,#e53935,#ff6a3d);color:#fff;font-size:13px;font-weight:950;letter-spacing:1.4px;padding:7px 6px}
+.gm-title{margin-top:12px;text-align:center;font-size:20px;font-weight:900;line-height:1.25}
+.gm-chip{display:table;margin:8px auto 0;background:#fff6db;color:#7c5a00;border:1px solid #f0e2a0;font-size:12.5px;font-weight:900;padding:4px 11px;border-radius:999px}
+.gm-reason{margin-top:10px;text-align:center;font-size:13.5px;color:#555;line-height:1.5}
+.gm-added{margin-top:10px;text-align:center;font-size:13px;font-weight:900;color:#12823f}
+.gm-tap{text-align:center;font-size:11.5px;color:#8a7a52;margin-top:6px}
+.gd-photo{position:relative;width:100%;aspect-ratio:1/1;background:#f7f8fa}
+.gd-photo img{width:100%;height:100%;object-fit:contain;display:block}
+.gd-photo .gm-ph{width:100%;height:100%;display:grid;place-items:center;font-size:80px}
+.gd-body{padding:18px 20px 22px}
+.gd-body h2{margin:0 0 8px;font-size:24px;line-height:1.2}
+.gd-free{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.gd-free strong{font-size:30px;font-weight:950;color:#12823f}
+.gd-free span{background:#fff6db;color:#7c5a00;border:1px solid #f0e2a0;font-size:12.5px;font-weight:900;padding:4px 11px;border-radius:999px}
+.gd-sec{margin-top:14px;border:1px solid #e9ecef;border-radius:14px;padding:13px 14px;background:#fafbfc}
+.gd-sec h4{margin:0 0 6px;font-size:12px;letter-spacing:.8px;text-transform:uppercase;color:#7c5a00}
+.gd-sec p{margin:0;font-size:14px;line-height:1.55;color:#374151}
+.gd-timer{font-weight:900;color:#b45309;font-variant-numeric:tabular-nums}
+.gb-card{cursor:pointer}
+.gb-more{display:inline-block;margin-top:6px;font-size:12px;font-weight:900;color:#7c5a00}
+</style>
 </head>
 <body>
 <div class="top-load-bar show" id="topLoadBar"></div>
@@ -551,10 +655,11 @@ body{min-height:100vh}
 </header>
 
 <main class="wrap">
- <button id="globalBack" class="global-back" onclick="goBackPage()" aria-label="Go back"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+ <button id="globalBack" class="global-back" onclick="goBackPage()" aria-label="Go back"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Back</span></button>
  
  <section id="home" class="page active">
-  <div class="hero"><div><h1>Jewellery Row</h1><p>Anti Tarnish Jewellery Row Material</p><div id="offerBanner" class="offer-banner" style="display:none"></div></div></div>
+  <div class="hero"><div><p class="hero-tag">Anti Tarnish Jewellery Row Material</p><div id="offerBanner" class="offer-banner" style="display:none"></div></div></div>
+  <div id="giftBar" class="gift-bar" style="display:none"></div>
   <div class="section-title"><h2>Featured Jewellery</h2><span class="sub">Jewellery materials collection</span></div>
   <div id="products" class="products">
     <div class="card product skeleton-card"><div class="pic skeleton-block"></div><div class="skeleton-line" style="width:70%"></div><div class="skeleton-line" style="width:40%"></div><div class="skeleton-line" style="width:50%;height:22px;margin-top:9px"></div></div>
@@ -596,6 +701,7 @@ body{min-height:100vh}
  <section id="cart" class="page">
   <div class="section-title"><h2>My Cart</h2><span class="sub">All items checkout together</span></div>
   <div class="card list" id="cartList"></div>
+  <div id="giftHint"></div>
   <div class="card cart-summary"><div><div class="total-label">TOTAL AMOUNT</div><div class="total" id="total">₹0</div></div><button class="order" onclick="startCheckout()">ORDER NOW →</button></div>
  </section>
 
@@ -728,6 +834,27 @@ body{min-height:100vh}
   </div>
   <button type="button" class="mini-cart-order" onclick="page('cart')">ORDER NOW →</button>
 </div>
+<div id="giftModal" class="modal-bg" onclick="if(event.target===this)closeGiftModal()">
+ <div class="modal gm-modal" role="dialog" aria-modal="true">
+  <button class="close" style="z-index:3" onclick="closeGiftModal()">×</button>
+  <div class="gm-head">
+   <span class="gm-spark" style="left:12%;top:58%;animation-delay:0s">✨</span><span class="gm-spark" style="left:84%;top:50%;animation-delay:.6s">✨</span><span class="gm-spark" style="left:26%;top:18%;animation-delay:1.2s">🎉</span><span class="gm-spark" style="left:72%;top:16%;animation-delay:1.8s">🎉</span>
+   <span class="gm-kicker">CONGRATULATIONS</span>
+   <h2>You unlocked a FREE gift!</h2>
+   <p>It has been added to your cart at no cost.</p>
+  </div>
+  <div class="gm-body">
+   <div id="giftModalBody"></div>
+   <button class="primary" onclick="closeGiftModal()">Awesome, continue shopping</button>
+  </div>
+ </div>
+</div>
+<div id="giftDetail" class="modal-bg" style="z-index:110" onclick="if(event.target===this)closeGiftDetail()">
+ <div class="modal gd-modal" role="dialog" aria-modal="true">
+  <button class="close" style="z-index:3" onclick="closeGiftDetail()">×</button>
+  <div id="giftDetailBody"></div>
+ </div>
+</div>
 <div id="toast" class="toast"></div>
 
 <div id="noticeModal" class="modal-bg" onclick="if(event.target===this)closeNotice()">
@@ -824,8 +951,11 @@ function discountActive(){
   if(prepaidDiscountExpiresAt>0 && nowMs()>=prepaidDiscountExpiresAt) return false; // timer over -> offer ended, discount = 0
   return true;
 }
+/* A free gift and the % discount can NOT be combined: if the order has a free gift, the % discount is 0. */
+function giftInCart(){return Array.isArray(cart)&&cart.some(x=>x&&x.gift);}
 function prepaidDiscountAmount(baseTotal){
   if(!discountActive()) return 0;
+  if(giftInCart()) return 0;
   return Math.round(baseTotal*prepaidDiscountPercent/100);
 }
 function renderOfferBanner(){
@@ -836,10 +966,10 @@ function renderOfferBanner(){
   if(prepaidDiscountExpiresAt>0){
     const left=prepaidDiscountExpiresAt-nowMs();
     el.classList.toggle("ending",left<10*60*1000); // last 10 minutes: turns orange
-    el.innerHTML=`🔥 <span>${prepaidDiscountPercent}% OFF on Prepaid (UPI) orders</span> <span>Ends in</span> <span class="ob-time">${fmtCountdown(left)}</span>`;
+    el.innerHTML=`🔥 <span>${prepaidDiscountPercent}% OFF on Prepaid (UPI) orders</span><span style="font-weight:600;font-size:11px;opacity:.85">(not valid with Free Gift)</span> <span>Ends in</span> <span class="ob-time">${fmtCountdown(left)}</span>`;
   }else{
     el.classList.remove("ending");
-    el.innerHTML=`🔥 <span>${prepaidDiscountPercent}% OFF on Prepaid (UPI) orders</span>`;
+    el.innerHTML=`🔥 <span>${prepaidDiscountPercent}% OFF on Prepaid (UPI) orders</span><span style="font-weight:600;font-size:11px;opacity:.85">(not valid with Free Gift)</span>`;
   }
 }
 function fmtCountdown(ms){
@@ -1064,10 +1194,162 @@ let activeCategory="all";
 let profileData=JSON.parse(localStorage.getItem("sw_profile")||"{}"),logged=localStorage.getItem("sw_login")==="1";
 const money=n=>"₹"+Number(n).toLocaleString("en-IN");
 const save=()=>{
+  const gr=applyGifts();           // free gifts follow the cart value automatically
   localStorage.setItem("sw_cart",JSON.stringify(cart));
   renderCart();
   syncCustomerToFirebase();
+  notifyGifts(gr);
+  renderGiftBar();
 };
+
+/* =====================================================================
+   FREE GIFTS — admin adds them in the "gifts" path (see admin app).
+   gifts/{id} = {id,title,photo,minValue,reason,expiresAt}
+   - cart (paid items) value >= minValue  => gift is added for FREE + popup
+   - value drops below minValue / offer expires => gift is removed again
+   - expiresAt = 0 means no timer.
+===================================================================== */
+let GIFTS=[],giftsLoaded=false,_giftSig="";
+const escH=t=>String(t==null?"":t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function giftIsActive(g){
+  if(!g||!(Number(g.minValue)>0))return false;
+  const exp=Number(g.expiresAt)||0;
+  return !exp||nowMs()<exp;
+}
+function activeGifts(){return GIFTS.filter(giftIsActive).sort((a,b)=>a.minValue-b.minValue);}
+function paidSubtotal(){return cart.reduce((a,x)=>x.gift?a:a+x.p*x.qty,0);}
+/* ONE free gift per order: the highest gift whose minimum the cart has reached.
+   If the cart grows into a bigger tier the gift is swapped for the bigger one;
+   if it drops below every minimum the gift is removed. */
+function bestGift(sub){
+  const el=sub>0?activeGifts().filter(g=>sub>=Number(g.minValue)):[];
+  return el.length?el[el.length-1]:null;
+}
+function applyGifts(){
+  const res={added:[],removed:[]};
+  if(!giftsLoaded)return res;               // never drop gifts before we know the offers
+  const best=bestGift(paidSubtotal());
+  cart=cart.filter(x=>{
+    if(!x.gift)return true;
+    if(best&&x.giftId===best.id)return true;
+    res.removed.push(x);return false;
+  });
+  if(best&&!cart.some(x=>x.giftId===best.id)){
+    cart.push({id:"gift:"+best.id,giftId:best.id,gift:true,n:best.title+" (Free Gift)",p:0,qty:1});
+    res.added.push(best);
+  }
+  return res;
+}
+function notifyGifts(r){
+  if(r.removed.length&&!r.added.length)setTimeout(()=>toast("Free gift removed - cart value is below the minimum"),150);
+  if(r.added.length)showGiftPopup(r.added);
+}
+/* For changes that do not go through save() (offers edited / timer ended). */
+function refreshGifts(){
+  const r=applyGifts();
+  if(r.added.length||r.removed.length){
+    localStorage.setItem("sw_cart",JSON.stringify(cart));
+    renderCart();syncCustomerToFirebase();notifyGifts(r);
+  }
+  renderGiftBar();
+}
+function giftPhotoHtml(g,cls){
+  return g.photo?`<img src="${g.photo}" alt="${escH(g.title)}">`:'<div class="gm-ph">🎁</div>';
+}
+function showGiftPopup(list){
+  document.getElementById("giftModalBody").innerHTML=list.map(g=>`<div class="gm-gift" onclick="closeGiftModal();openGiftDetail('${g.id}')"><div class="gm-photo">${giftPhotoHtml(g)}<span class="gm-ribbon">🎁 FREE GIFT</span></div><div class="gm-title">${escH(g.title)}</div><span class="gm-chip">FREE on orders above ${money(g.minValue)}</span>${g.reason?`<div class="gm-reason">${escH(g.reason)}</div>`:""}<div class="gm-added">✓ Added to your cart</div><div class="gm-tap">Tap to view full details</div></div>`).join("");
+  document.getElementById("giftModal").classList.add("show");
+}
+/* Full gift page (like a product page) - opened from the banner, the popup or the cart */
+function openGiftDetail(id){
+  const g=GIFTS.find(x=>x.id===id);if(!g)return;
+  const min=Number(g.minValue),exp=Number(g.expiresAt)||0,sub=paidSubtotal(),best=bestGift(sub);
+  const isBest=!!best&&best.id===g.id,lower=!isBest&&sub>=min;
+  const pct=Math.max(0,Math.min(100,Math.round(sub/min*100)));
+  const state=isBest?"✓ Unlocked - this gift is in your cart":lower?"✓ You already get a bigger gift (1 free gift per order)":"Add "+money(min-sub)+" more to unlock this gift";
+  document.getElementById("giftDetailBody").innerHTML=`<div class="gd-photo">${giftPhotoHtml(g)}<span class="gm-ribbon">🎁 FREE GIFT</span></div><div class="gd-body"><h2>${escH(g.title)}</h2><div class="gd-free"><strong>FREE</strong><span>On orders above ${money(min)}</span></div>${g.reason?`<div class="gd-sec"><h4>Why is it free?</h4><p>${escH(g.reason)}</p></div>`:""}<div class="gd-sec"><h4>How to get it</h4><p>Add products worth ${money(min)} or more to your cart and this gift is added automatically. Only one free gift is given per order.</p><div class="gb-prog" style="margin-top:10px"><i style="width:${isBest||lower?100:pct}%"></i></div><span class="gb-state">${state}</span></div>${exp?`<div class="gd-sec"><h4>Offer timer</h4><p>⏳ Ends in <span class="gd-timer" data-gexp="${exp}">${fmtCountdown(exp-nowMs())}</span></p></div>`:""}<button class="primary" style="margin-top:16px" onclick="closeGiftDetail()">Continue shopping</button></div>`;
+  document.getElementById("giftDetail").classList.add("show");
+}
+function closeGiftDetail(){document.getElementById("giftDetail").classList.remove("show");}
+function closeGiftModal(){document.getElementById("giftModal").classList.remove("show");}
+let _gbPause=false;
+function gbTrack(){return document.getElementById("gbTrack");}
+function gbStep(t){const c=t.children;return c.length>1?c[1].offsetLeft-c[0].offsetLeft:(c[0]?c[0].offsetWidth:1);}
+function gbIndex(){
+  const t=gbTrack();if(!t||!t.children.length)return 0;
+  if(t.scrollLeft+t.clientWidth>=t.scrollWidth-4&&t.scrollLeft>0)return t.children.length-1;
+  return Math.min(t.children.length-1,Math.round(t.scrollLeft/gbStep(t)));
+}
+function gbDots(){
+  const i=gbIndex();
+  document.querySelectorAll("#gbDots .gb-dot").forEach((d,k)=>d.classList.toggle("on",k===i));
+}
+function gbGo(i){const t=gbTrack();if(t)t.scrollTo({left:i*gbStep(t),behavior:"smooth"});}
+function gbMove(dir){
+  const t=gbTrack();if(!t)return;
+  const n=t.children.length,atEnd=t.scrollLeft+t.clientWidth>=t.scrollWidth-4;
+  if(dir>0&&atEnd)return gbGo(0);
+  if(dir<0&&t.scrollLeft<=2)return t.scrollTo({left:t.scrollWidth,behavior:"smooth"});
+  gbGo(Math.max(0,Math.min(n-1,gbIndex()+dir)));
+}
+function renderGiftBar(){
+  const el=document.getElementById("giftBar");if(!el)return;
+  const act=activeGifts();
+  if(!act.length){el.style.display="none";el.innerHTML="";return;}
+  const old=gbTrack(),keep=old?gbIndex():0;
+  const sub=paidSubtotal(),best=bestGift(sub);
+  el.style.display="block";
+  const slides=act.map(g=>{
+    const min=Number(g.minValue),exp=Number(g.expiresAt)||0;
+    const isBest=!!best&&best.id===g.id,lower=!isBest&&sub>=min;
+    const pct=Math.max(0,Math.min(100,Math.round(sub/min*100)));
+    const state=isBest?"✓ Unlocked - added to your cart":lower?"✓ You already get a bigger gift (1 gift per order)":"Add "+money(min-sub)+" more to unlock";
+    return `<div class="gb-card${isBest?" got":""}" onclick="openGiftDetail('${g.id}')"><div class="gb-headrow"><div class="gb-imgbox">${g.photo?`<img class="gb-img" src="${g.photo}" alt="">`:'<div class="gb-ph">🎁</div>'}<span class="gb-ribbon">🎁 FREE GIFT</span></div><div class="gb-side"><div class="gb-title">${escH(g.title)}</div><span class="gb-min">On orders above ${money(min)}</span></div></div><div class="gb-details">${g.reason?`<div class="gb-reason">${escH(g.reason)}</div>`:""}${exp?`<div class="gb-timerline">⏳ Offer ends in <span class="gb-timer" data-gexp="${exp}">${fmtCountdown(exp-nowMs())}</span></div>`:""}<div class="gb-prog"><i style="width:${isBest||lower?100:pct}%"></i></div><span class="gb-state">${state}</span><span class="gb-more">Tap to view details ›</span></div></div>`;
+  }).join("");
+  const multi=act.length>1;
+  el.innerHTML=`<div class="gb-top"><span class="gb-badge">🎁 FREE GIFT</span><span class="gb-note">One free gift per order - the highest gift you unlock is added to your cart automatically.</span></div><div class="gb-slider">${multi?'<button type="button" class="gb-arrow gb-prev" aria-label="Previous" onclick="gbMove(-1)">‹</button>':""}<div class="gb-track" id="gbTrack">${slides}</div>${multi?'<button type="button" class="gb-arrow gb-next" aria-label="Next" onclick="gbMove(1)">›</button>':""}</div>${multi?`<div class="gb-dots" id="gbDots">${act.map((g,k)=>`<button type="button" class="gb-dot${k===0?" on":""}" aria-label="Gift ${k+1}" onclick="gbGo(${k})"></button>`).join("")}</div>`:""}`;
+  const t=gbTrack();
+  if(t){
+    if(keep>0){t.style.scrollBehavior="auto";t.scrollLeft=keep*gbStep(t);t.style.scrollBehavior="";}
+    let raf=0;t.addEventListener("scroll",()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(gbDots);},{passive:true});
+    ["mouseenter","touchstart","pointerdown"].forEach(ev=>t.addEventListener(ev,()=>{_gbPause=true;},{passive:true}));
+    ["mouseleave","touchend"].forEach(ev=>t.addEventListener(ev,()=>{setTimeout(()=>{_gbPause=false;},4000);},{passive:true}));
+    gbDots();
+  }
+}
+/* gentle auto-slide so every gift gets seen (pauses while the customer touches it) */
+setInterval(()=>{
+  const t=gbTrack();
+  if(!t||t.children.length<2||_gbPause||document.hidden)return;
+  const home=document.getElementById("home");
+  if(home&&!home.classList.contains("active"))return;
+  gbMove(1);
+},4500);
+function renderGiftHint(sub){
+  const el=document.getElementById("giftHint");if(!el)return;
+  const next=activeGifts().find(g=>sub<Number(g.minValue));
+  if(!cart.length||!next){el.innerHTML="";return;}
+  const has=bestGift(sub);
+  el.innerHTML=`<div class="gift-hint">🎁 Add ${money(Number(next.minValue)-sub)} more to ${has?"upgrade your free gift to":"get"} <b>${escH(next.title)}</b>${has?"":" FREE"}!<div style="font-weight:600;font-size:11.5px;margin-top:2px">One free gift per order</div></div>`;
+}
+function giftCartRow(x){
+  const g=GIFTS.find(g=>g.id===x.giftId)||{};
+  const thumb=`<div class="cart-thumb">${g.photo?`<img src="${g.photo}" alt="">`:productIcon("box")}</div>`;
+  return `<div class="row cart-row cart-gift-row" style="cursor:pointer" onclick="openGiftDetail('${x.giftId}')"><div class="cart-product-info">${thumb}<div class="cart-product-text"><b class="cart-product-name" title="${escH(g.title||x.n)}">${escH(g.title||x.n)}<span class="gift-tag">FREE GIFT</span></b><div class="sub">${escH(g.reason||"Free gift on your order")}</div></div></div><div class="cart-row-actions"><strong class="gift-free">FREE</strong></div></div>`;
+}
+db.ref("gifts").on("value",snap=>{
+  const val=snap.val()||{};
+  GIFTS=Object.keys(val).map(k=>val[k]).filter(Boolean);
+  giftsLoaded=true;_giftSig=activeGifts().map(g=>g.id).join(",");
+  refreshGifts();
+});
+/* every second: tick the countdowns; when an offer expires, drop it everywhere */
+setInterval(()=>{
+  if(!giftsLoaded)return;
+  const sig=activeGifts().map(g=>g.id).join(",");
+  if(sig!==_giftSig){_giftSig=sig;refreshGifts();return;}
+  document.querySelectorAll("[data-gexp]").forEach(el=>{el.textContent=fmtCountdown(Number(el.dataset.gexp)-nowMs());});
+},1000);
 function toast(t){let x=document.getElementById("toast");x.textContent=t;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),1800)}
 
 /* Pushes the logged-in customer's profile + current cart to Firebase so
@@ -1382,12 +1664,13 @@ function buyNow(id,amount=1){
   page("checkoutAddress");
 }
 function renderSummary(){
+  refreshGifts();
   let items=checkoutItems();
   let subtotal=checkoutSubtotal();
   document.getElementById("summaryItems").innerHTML=items.map(x=>`
     <div class="summary-item">
-      <div><div class="summary-name">${x.n}</div><div class="summary-meta">₹${Number(x.p).toLocaleString("en-IN")} × ${x.qty}</div></div>
-      <div class="summary-price">${money(x.p*x.qty)}</div>
+      <div><div class="summary-name">${x.gift?"🎁 ":""}${x.n}</div><div class="summary-meta">${x.gift?"Free gift":"₹"+Number(x.p).toLocaleString("en-IN")+" × "+x.qty}</div></div>
+      <div class="summary-price">${x.gift?'<span style="color:#12823f">FREE</span>':money(x.p*x.qty)}</div>
     </div>`).join("");
   const shipNow=effectiveShipping(subtotal);
   document.getElementById("summaryProductAmount").textContent=money(subtotal);
@@ -1415,6 +1698,7 @@ function renderPaymentAmount(method){
     <div class="amount-line"><span>Product Amount</span><strong>${money(subtotal)}</strong></div>
     <div class="amount-line"><span>Shipping</span><strong>${shipLine}</strong></div>
     ${discount>0?`<div class="amount-line"><span>Prepaid Discount (${prepaidDiscountPercent}%)</span><strong style="color:#1a7a3c">-${money(discount)}</strong></div>`:""}
+    ${(discountActive()&&giftInCart()&&method==="PREPAID")?`<div class="amount-line" style="font-size:12.5px;color:#12823f"><span>🎁 Free Gift applied - % discount is not valid with a free gift</span></div>`:""}
     ${(discountActive()&&prepaidDiscountExpiresAt>0&&method==="PREPAID")?`<div class="amount-line" style="font-size:12px;color:#b45309"><span>⏳ Offer ends in</span><strong id="discountTimerText">${fmtCountdown(prepaidDiscountExpiresAt-nowMs())}</strong></div>`:""}
     <div class="amount-line grand"><span>Total Payable</span><strong id="paymentTotal">${money(total)}</strong></div>`;
   return total;
@@ -1508,12 +1792,14 @@ function renderCart(){
  let box=document.getElementById("cartList");
  if(!cart.length){box.innerHTML='<div class="empty">Your cart is empty.<br><br>Go to Home and add products.</div>';}
  else box.innerHTML=cart.map(x=>{
+   if(x.gift)return giftCartRow(x);
    const prod=PRODUCTS.find(p=>p.id===x.id);
    const thumb=`<div class="cart-thumb">${prod?productMedia(prod):productIcon("box")}</div>`;
    return `<div class="row cart-row" onclick="openProduct('${x.id}')" style="cursor:pointer"><div class="cart-product-info">${thumb}<div class="cart-product-text"><b class="cart-product-name" title="${x.n}">${x.n}</b><div class="sub">${money(x.p)} each</div></div></div><div class="cart-row-actions" onclick="event.stopPropagation()"><div class="qty"><button type="button" onclick="qty('${x.id}',-1)">−</button><b style="min-width:22px;text-align:center;font-size:13px">${x.qty}</b><button type="button" onclick="qty('${x.id}',1)">+</button></div><strong>${money(x.p*x.qty)}</strong><button type="button" class="remove-cart" aria-label="Remove ${x.n}" onclick="removeFromCart('${x.id}')">Remove</button></div></div>`;
  }).join("");
  const cartSubtotal=cart.reduce((a,x)=>a+x.p*x.qty,0);
  document.getElementById("total").textContent=money(cartSubtotal);
+ renderGiftHint(cartSubtotal);
  const shortfall=minOrderShortfall(cartSubtotal);
  let banner=document.getElementById("minOrderBanner");
  if(cart.length && shortfall>0){
@@ -1529,8 +1815,8 @@ function renderCart(){
    banner.style.display="none";
  }
 }
-function qty(id,d){let x=cart.find(x=>x.id===id);if(!x)return;x.qty+=d;if(x.qty<1)cart=cart.filter(x=>x.id!==id);save()}
-function removeFromCart(id){const item=cart.find(x=>x.id===id);if(!item)return;cart=cart.filter(x=>x.id!==id);save();toast(`${item.n} removed from cart`);}
+function qty(id,d){let x=cart.find(x=>x.id===id);if(!x||x.gift)return;x.qty+=d;if(x.qty<1)cart=cart.filter(x=>x.id!==id);save()}
+function removeFromCart(id){const item=cart.find(x=>x.id===id);if(!item||item.gift)return;cart=cart.filter(x=>x.id!==id);save();toast(`${item.n} removed from cart`);}
 let pageHistory=["home"];
 let navigatingBack=false;
 function goBackPage(){
@@ -1712,7 +1998,7 @@ function renderOrderDetail(o){
  const currentLabel=getOrderStatusLabel(o.status);
  const cancelAllowed=canCancelOrder(o);
  const stageHtml=visibleStages.map((st,i)=>`<div class="track-step ${i<visibleStages.length-1?"done":"active"}"><div class="track-icon">${i<visibleStages.length-1?"✓":st.icon}</div><div class="track-label">${st.label}</div></div>`).join("");
- const itemsHtml=(o.items||[]).map(x=>`<div class="detail-item"><span>${x.n} × ${x.qty}</span><strong>${money(x.p*x.qty)}</strong></div>`).join("");
+ const itemsHtml=(o.items||[]).map(x=>`<div class="detail-item"><span>${x.n} × ${x.qty}</span><strong>${x.gift||x.p===0?"FREE":money(x.p*x.qty)}</strong></div>`).join("");
  const a=o.address||profileData||{};
  document.getElementById("orderDetailCard").innerHTML=`<div class="order-detail-top"><div class="order-detail-title"><h2>Order #${o.id}</h2><div class="order-detail-meta">Placed on ${o.date} • ${o.payment||"COD"}</div></div><div class="detail-status-pill"><span class="detail-status-dot"></span>${currentLabel}</div></div><div class="tracking-caption">Order tracking status</div><div class="tracking-wrap"><div class="tracking-line"><div class="track-progress" style="width:${progress}%"></div>${stageHtml||'<div class="track-step active"><div class="track-icon">✓</div><div class="track-label">Placed</div></div>'}</div></div><div class="order-detail-grid"><div class="detail-box"><h3>Order Items</h3>${itemsHtml||'<div class="sub">No item details available.</div>'}<div class="detail-total"><span>Total Paid / Payable</span><strong>${money(o.total)}</strong></div></div><div class="detail-box"><h3>Delivery Details</h3><div class="detail-item"><span>Expected Delivery</span><strong>${o.deliveryDate||"—"}</strong></div><div class="detail-item"><span>Payment</span><strong>${o.payment||"COD"}</strong></div>${o.utr?`<div class="detail-item"><span>UTR</span><strong>${o.utr}</strong></div>`:""}<div class="detail-item" style="display:block"><span>Address</span><div class="detail-address">${a.name||""}${a.phone?`<br>${a.phone}`:""}${a.address?`<br>${a.address}`:""}${a.landmark?`<br>${a.landmark}`:""}${a.pincode?`<br>${a.pincode}`:""}</div></div></div></div><div class="detail-actions"><button class="secondary" onclick="page('orders')">← My Orders</button>${cancelAllowed?`<button class="cancel-order" style="margin-top:0;padding:11px 14px;font-size:12px" onclick="cancelOrder('${o.id}')">Cancel Order</button>`:`<span class="detail-cancel-disabled">${o.status==="CANCELLED"?"Order cancelled":"Cancellation unavailable after dispatch"}</span>`}</div>`;
 }
@@ -1800,7 +2086,7 @@ Object.assign(window,{
   loadCheckoutAddress,loadProductsFromServer,loadProfile,login,
   loginWithPhone,logout,normalizeOrder,noticeConfirm,
   openOrderDetail,openPayment,openPrepaidModal,openProduct,page,placeOrder,
-  productIcon,productMedia,qty,refreshOrdersFromStorage,
+  productIcon,productMedia,qty,closeGiftModal,
   removeFromCart,renderCart,renderOrderDetail,renderOrders,renderPayment,
   renderProducts,renderRealQr,renderRelatedProducts,renderSummary,
   retryLoadInventory,
@@ -1812,6 +2098,118 @@ Object.assign(window,{
 
 
 try{setupPincodeValidation();}catch(e){console.warn("Pincode validation setup failed",e);}
+</script>
+<style>
+/* ===== Pro close (X) buttons for all popups ===== */
+.modal-bg .close,.modal .close{
+  position:absolute;right:12px;top:12px;width:36px;height:36px;padding:0;border-radius:50%;
+  border:1px solid rgba(0,0,0,.08);font-size:0;line-height:0;color:transparent;cursor:pointer;z-index:5;
+  background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232b1b12' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M6 6l12 12M18 6L6 18'/%3E%3C/svg%3E") center/16px 16px no-repeat;
+  box-shadow:0 2px 10px rgba(0,0,0,.16);transition:background-color .18s,transform .18s,box-shadow .18s;-webkit-tap-highlight-color:transparent
+}
+.modal-bg .close::after{content:"";position:absolute;inset:-6px}
+.modal-bg .close:hover{background-color:#f3f4f6;box-shadow:0 3px 14px rgba(0,0,0,.22)}
+.modal-bg .close:active{transform:scale(.9)}
+.modal-bg .close:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+/* ===== Pro back button ===== */
+.global-back{width:auto;height:40px;padding:0 16px 0 11px;gap:5px;border-radius:999px;border:1px solid #e2e5e9;background:#fff;color:#2b1b12;font:800 13.5px Arial,Helvetica,sans-serif;box-shadow:0 2px 8px rgba(15,23,42,.08)}
+.global-back span{line-height:1}
+.global-back svg{flex:none}
+.global-back:hover{background:#fff8de;border-color:#e3c866;transform:translateX(-2px)}
+.global-back:active{transform:scale(.96)}
+/* ===== Product images: every photo fills its box (no flat strips, no empty sides) ===== */
+.product .pic{height:auto!important;aspect-ratio:1/1;position:relative;overflow:hidden;padding:0;display:grid;place-items:center;background:#f7f8fa}
+.product .pic img.product-photo{position:absolute!important;inset:0;width:100%!important;height:100%!important;max-height:none!important;object-fit:cover!important;object-position:center;transform:none}
+.product:hover .pic img.product-photo{transform:scale(1.04)}
+#productDetailCard .detail-pic{width:100%!important;max-width:460px;height:auto!important;aspect-ratio:1/1;position:relative;overflow:hidden;display:grid;place-items:center;margin:0 auto;background:#f7f8fa}
+#productDetailCard .detail-pic img.product-photo{position:absolute!important;inset:0;width:100%!important;height:100%!important;max-height:none!important;object-fit:cover!important;object-position:center;transform:none!important;padding:0}
+#productDetailCard .gallery-thumbs{gap:8px;justify-content:flex-start}
+.gallery-thumb{width:64px!important;height:64px!important;border-radius:10px}
+.gallery-thumb img{object-fit:cover!important}
+.cart-thumb img{object-fit:cover!important}
+.gd-photo img{object-fit:cover!important}
+@media(max-width:760px){
+  #productDetailCard .detail-gallery-col{width:100%!important;align-items:stretch!important}
+  #productDetailCard .detail-pic{width:100%!important;max-width:min(100%,430px)}
+  #productDetailCard .gallery-thumbs{justify-content:center}
+}
+</style>
+<style>
+/* ===== Free gift banner: compact size ===== */
+.gift-bar{padding:10px 10px 8px!important;margin-bottom:16px!important;border-radius:14px!important}
+.gb-top{margin-bottom:8px!important;gap:6px!important}
+.gb-badge{font-size:10.5px!important;padding:4px 9px!important}
+.gb-note{display:none!important}
+.gb-card{border-radius:12px!important}
+.gb-imgbox{aspect-ratio:auto!important;height:130px!important;max-height:none!important}
+.gb-ribbon{left:8px!important;top:8px!important;padding:3px 9px!important;font-size:10px!important}
+.gb-side{padding:8px 11px 0!important;gap:5px!important}
+.gb-title{font-size:15px!important;line-height:1.25!important}
+.gb-min{font-size:11px!important;padding:3px 8px!important}
+.gb-details{padding:6px 11px 10px!important}
+.gb-reason{font-size:12px!important;line-height:1.35!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.gb-timerline{margin-top:5px!important;font-size:11.5px!important}
+.gb-prog{margin-top:7px!important;height:5px!important}
+.gb-state{margin-top:4px!important;font-size:11.5px!important}
+.gb-more{margin-top:4px!important;font-size:11px!important}
+.gb-dots{margin-top:7px!important}
+@media(min-width:900px){.gb-imgbox{height:150px!important}}
+@media(max-width:760px){.gb-imgbox{height:115px!important;aspect-ratio:auto!important;max-height:none!important}.gift-bar{padding:8px 8px 7px!important}}
+</style>
+<style>
+/* ===== Free gift banner v3: clean single card, photo left + details right ===== */
+.gift-bar{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 0 16px!important;border-radius:0!important;overflow:visible!important}
+.gift-bar:before{display:none!important}
+.gb-top{display:none!important}
+.gb-card{display:grid!important;grid-template-columns:108px minmax(0,1fr);column-gap:12px;row-gap:0;padding:10px!important;border:1px solid #eadfb8;background:linear-gradient(180deg,#fffdf4,#fff)!important;border-radius:14px!important;box-shadow:0 4px 14px rgba(43,27,18,.09)!important;align-items:start}
+.gb-headrow{display:contents!important}
+.gb-imgbox{grid-column:1;grid-row:1 / span 2;width:108px!important;height:108px!important;aspect-ratio:1/1!important;border-radius:12px!important;border:1px solid #eadfb8!important;max-height:none!important}
+.gb-imgbox:after{display:none!important}
+.gb-ribbon{left:0!important;right:0!important;top:auto!important;bottom:0!important;border-radius:0!important;text-align:center;padding:3px 0!important;font-size:9.5px!important;letter-spacing:.8px!important;box-shadow:none!important}
+.gb-side{grid-column:2;grid-row:1;padding:0!important;gap:4px!important}
+.gb-title{font-size:15.5px!important}
+.gb-details{grid-column:2;grid-row:2;padding:4px 0 0!important;border:0!important}
+.gb-more{display:none!important}
+.gb-dot{background:rgba(43,27,18,.22)!important}
+.gb-dot.on{background:#d4af37!important}
+.gb-dots{margin-top:8px!important}
+@media(max-width:760px){.gb-card{grid-template-columns:96px minmax(0,1fr);padding:9px!important}.gb-imgbox{width:96px!important;height:96px!important}}
+</style>
+<style>
+/* ===== Free gift banner v4: bigger photo (left), details right, "Tap to view" label on photo ===== */
+.gb-card{grid-template-columns:160px minmax(0,1fr)!important;column-gap:14px!important;padding:12px!important}
+.gb-imgbox{width:160px!important;height:160px!important}
+.gb-imgbox:before{content:"👆 Tap to view";position:absolute;left:8px;top:8px;z-index:3;background:rgba(17,17,17,.78);color:#fff;font-size:10.5px;font-weight:800;letter-spacing:.3px;padding:4px 9px;border-radius:999px;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.gb-ribbon{font-size:10.5px!important;padding:4px 0!important}
+.gb-title{font-size:17px!important}
+.gb-reason{font-size:12.5px!important}
+@media(max-width:760px){
+  .gb-card{grid-template-columns:138px minmax(0,1fr)!important;column-gap:11px!important;padding:10px!important}
+  .gb-imgbox{width:138px!important;height:138px!important}
+  .gb-imgbox:before{font-size:9.5px;padding:3px 8px;left:6px;top:6px}
+  .gb-title{font-size:15.5px!important}
+}
+</style>
+<script>
+/* lock the page behind any open popup (works on iOS/Android too) */
+(function(){
+  var locked=false,y=0;
+  function anyOpen(){return !!document.querySelector('.modal-bg.show');}
+  function sync(){
+    var open=anyOpen();
+    if(open&&!locked){
+      y=window.pageYOffset||document.documentElement.scrollTop||0;
+      document.body.style.top=(-y)+'px';
+      document.body.classList.add('scroll-locked');locked=true;
+    }else if(!open&&locked){
+      document.body.classList.remove('scroll-locked');
+      document.body.style.top='';
+      window.scrollTo(0,y);locked=false;
+    }
+  }
+  new MutationObserver(sync).observe(document.body,{subtree:true,attributes:true,attributeFilter:['class']});
+  sync();
+})();
 </script>
 </body></html>
 <style>
