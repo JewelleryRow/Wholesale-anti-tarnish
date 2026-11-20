@@ -1360,7 +1360,11 @@ function syncCustomerToFirebase(){
   if(!logged || !profileData.phone) return;
   const phone=String(profileData.phone).trim();
   if(!/^\d{10}$/.test(phone)) return;
-  db.ref("customers/"+phone).set({
+  /* Admin ne cart edit kiya ho to pehle wahi cart Firebase se lena hai —
+     warna yahan purana local cart upar likh kar admin ka edit mita deta.
+     Check poora hone tak sync ruka rehta hai (startCartWatch dekho). */
+  if(!_cartReady){ _cartSyncPending=true; return; }
+  db.ref("customers/"+phone).update({
     phone,
     name:profileData.name||"",
     address:profileData.address||"",
@@ -1372,6 +1376,53 @@ function syncCustomerToFirebase(){
     cartTotal:cart.reduce((a,x)=>a+x.p*x.qty,0),
     updatedAt:Date.now()
   }).catch(err=>console.error("syncCustomerToFirebase failed:",err));
+}
+
+/* =====================================================================
+   ADMIN CART EDIT — admin panel ("Cart Edit") kisi customer ka cart badal
+   sakta hai (customers/<phone>/cart + cartEditedAt). Yahan logged-in
+   customer ke liye cartEditedAt ko live dekhte hain: jab bhi wo naya ho
+   (is device par pehle dekha hua nahi), Firebase wala cart local cart ki
+   jagah le leta hai. Login ya page khulte hi bhi yahi check chalta hai.
+===================================================================== */
+let _cartRef=null,_cartPhone=null,_cartReady=false,_cartSyncPending=false;
+const _cartSeenKey=ph=>"sw_cart_edit_seen_"+ph;
+function stopCartWatch(){
+  if(_cartRef){try{_cartRef.off()}catch(e){}}
+  _cartRef=null;_cartPhone=null;_cartReady=false;_cartSyncPending=false;
+}
+function _cartWatchDone(){
+  _cartReady=true;
+  if(_cartSyncPending){_cartSyncPending=false;syncCustomerToFirebase();}
+}
+function startCartWatch(){
+  if(!logged||!profileData.phone)return;
+  const phone=String(profileData.phone).trim();
+  if(!/^\d{10}$/.test(phone))return;
+  if(_cartPhone===phone&&_cartRef)return;
+  stopCartWatch();
+  _cartPhone=phone;
+  _cartRef=db.ref("customers/"+phone+"/cartEditedAt");
+  _cartRef.on("value",snap=>{
+    if(_cartPhone!==phone)return;
+    const edited=Number(snap.val())||0;
+    let seen=0;
+    try{seen=Number(localStorage.getItem(_cartSeenKey(phone)))||0}catch(e){}
+    if(!edited||edited<=seen){_cartWatchDone();return;}
+    db.ref("customers/"+phone+"/cart").once("value").then(cs=>{
+      if(_cartPhone!==phone)return;
+      const raw=cs.val();
+      const arr=Array.isArray(raw)?raw:Object.keys(raw||{}).map(k=>raw[k]);
+      cart=arr.filter(x=>x&&x.id).map(x=>{
+        if(String(x.id).indexOf("gift:")===0)return {id:x.id,giftId:String(x.id).slice(5),gift:true,n:x.n||"",p:0,qty:1};
+        return {id:x.id,n:x.n||"",p:Number(x.p)||0,qty:Math.max(1,Math.min(999,Number(x.qty)||1))};
+      });
+      try{localStorage.setItem(_cartSeenKey(phone),String(edited))}catch(e){}
+      _cartReady=true;_cartSyncPending=false;
+      save();                       // gifts re-check + render + sync (cart wahi hai)
+      toast("Your cart was updated");
+    }).catch(err=>{console.error("admin cart pull failed:",err);_cartWatchDone();});
+  },err=>{console.error("cart watch failed:",err);_cartWatchDone();});
 }
 
 function productIcon(type){
@@ -1875,6 +1926,7 @@ function accountAction(){
  page("profile");
 }
 function logout(){
+  stopCartWatch();
   logged=false;
   localStorage.removeItem("sw_login");
   window.currentOpenOrderId=null;
@@ -1929,6 +1981,7 @@ function loginWithPhone(){
     closeLogin();
     updateHeaderAccount();
     toast(existing?"Login successful":"Account created successfully");
+    stopCartWatch();startCartWatch();
     syncCustomerToFirebase();
   };
   document.getElementById("loginStatus").textContent=existing?"Logging you in...":"Creating your account...";
@@ -2071,6 +2124,7 @@ try{renderCart();}catch(e){console.error("renderCart failed:",e);}
 try{renderOrders();}catch(e){console.error("renderOrders failed:",e);}
 try{loadProfile();}catch(e){console.error("loadProfile failed:",e);}
 try{updateHeaderAccount();}catch(e){console.error("updateHeaderAccount failed:",e);}
+try{startCartWatch();}catch(e){console.error("startCartWatch failed:",e);}
 try{syncOrderStatuses();}catch(e){console.error("syncOrderStatuses failed:",e);}
 
 /* Expose every function referenced from inline onclick/oninput/onchange
